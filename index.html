@@ -1,0 +1,2992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Assistência Técnica</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden; /* Evita scroll horizontal indesejado */
+        }
+        
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1rem 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            padding-bottom: 10px;
+        }
+
+        /* Fixed Navigation (Vertical) */
+        .fixed-nav {
+            position: fixed; /* Fixes the menu to the screen */
+            top: 0;          /* Aligns to the top */
+            left: 0;         /* Aligns to the left */
+            height: 100%;    /* Occupies full screen height */
+            width: 180px;    /* Fixed width of the vertical menu */
+            background-color: #007bff; /* Background color for the fixed menu */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Shadow for emphasis */
+            z-index: 100;    /* Ensures the menu stays above other elements */
+            padding-top: 100px; /* Top spacing for menu content, below the header */
+            box-sizing: border-box; /* Includes padding in total width/height */
+        }
+
+        .fixed-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column; /* Stacks items vertically */
+            align-items: flex-start; /* Aligns items to the left */
+        }
+
+        .fixed-nav ul li {
+            width: 100%; /* Occupies full width of the nav */
+            margin: 5px 0; /* Vertical spacing between items */
+        }
+
+        .fixed-nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 15px; /* Adjusts padding for click and visual */
+            display: block; /* Occupies full width of the li */
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .fixed-nav ul li a:hover {
+            background-color: #0056b3; /* Background color on hover */
+        }
+
+        /* Ajustes para o conteúdo principal (main) */
+        main {
+            margin-left: 180px; /* Desloca o conteúdo para a direita, liberando espaço para o menu */
+            padding: 20px;
+            max-width: 960px; /* Largura máxima para o conteúdo principal */
+            margin-right: auto; /* Centraliza o conteúdo dentro do espaço restante */
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos para a imagem lateral */
+        .side-image-container {
+            position: fixed;
+            top: 50%; /* Centraliza verticalmente */
+            right: 20px; /* Posição da borda direita */
+            transform: translateY(-50%); /* Ajusta para o centro exato */
+            z-index: 50; /* Garante que fique acima de outros elementos, mas abaixo da navegação se houver */
+            opacity: 0.7; /* Levemente transparente */
+            pointer-events: none; /* Impede que a imagem interfira com cliques ou seleção de texto */
+        }
+
+        .side-image-container img {
+            max-width: 200px; /* Tamanho máximo da imagem */
+            height: auto;
+            border-radius: 10px; /* Bordas arredondadas para a imagem */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Sombra sutil para profundidade */
+        }
+
+
+        .page-content {
+            display: none; /* Hidden by default */
+            padding: 20px;
+        }
+
+        .page-content.active {
+            display: block; /* Show active page */
+        }
+
+        h2, h3 {
+            color: #0056b3;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Forms */
+        form {
+            display: grid;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto 30px auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
+
+        form label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form select,
+        form textarea {
+            width: 100%; /* Ocupa a largura total disponível dentro do grid */
+            height: 40px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        form textarea {
+            resize: vertical;
+        }
+
+        /* Botões */
+        form button {
+            background-color: #28a745;
+            color: white;
+            padding: 14px 25px; /* Um pouco maiores */
+            border: none;
+            border-radius: 8px; /* Mais arredondadas */
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+
+        form button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 14px 25px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            padding: 14px 25px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+             border: none;
+            padding: 14px 25px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-success {
+            /* Removido height fixo para usar padding, mais flexível */
+            padding: 10px 15px; /* Tamanho consistente com outros botões de ação */
+            border-radius: 8px; /* Mais arredondadas */
+            background-color: #28a745;
+            color: white; /* Adicionado para consistência */
+            border: none; /* Adicionado para consistência */
+            cursor: pointer; /* Adicionado para consistência */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Estilos de Foco para Acessibilidade */
+        form input[type="text"]:focus,
+        form input[type="number"]:focus,
+        form select:focus,
+        form textarea:focus,
+        .search-section input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        form button:focus,
+        .item-card .actions button:focus,
+        .os-card .actions button:focus,
+        .transaction-card .actions button:focus,
+        .client-card .actions button:focus,
+        .alert-card .actions button:focus,
+        #modal-services-list .item-card button:focus,
+        .search-section button:focus { /* Adicionado foco para botões de pesquisa */
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4); /* Forte indicador de foco */
+        }
+
+
+        /* Search Sections and Results Lists */
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-section input {
+            flex-grow: 1;
+            height: 30px; /* Campos de pesquisa menores */
+            padding: 8px 10px; /* Ajuste o padding */
+            border-radius: 10px; /* Bordas arredondadas */
+            max-width: 300px; /* Limita o tamanho máximo em telas grandes */
+            box-sizing: border-box;
+            border: 2px solid #ccc; /* Consistência com outros inputs */
+            font-size: 0.95rem; /* Fonte um pouco menor */
+        }
+
+        /* Estilo específico para botões dentro das seções de pesquisa */
+        .search-section button {
+            background-color: #007bff; /* Azul primário para pesquisa */
+            color: white;
+            padding: 10px 18px; /* Padding ajustado para visual agradável */
+            border: none;
+            border-radius: 8px; /* Bordas arredondadas consistentes */
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Sombra mais pronunciada */
+        }
+
+        .search-section button:hover {
+            background-color: #0056b3; /* Azul mais escuro ao passar o mouse */
+            transform: translateY(-2px); /* Efeito de "levantar" */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Garantir que #search-product-sale siga o padrão */
+        #search-product-sale {
+            height: 30px;
+            width: auto; /* Deixa flex-grow controlar */
+            max-width: 200px; /* Pode manter um max-width se desejar */
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 2px solid #ccc;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+
+
+        .results-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            background-color: #fcfcfc;
+            margin-bottom: 20px;
+        }
+
+        .item-card, .os-card, .transaction-card, .cash-history-card, .client-card, .alert-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-card h4, .os-card h4, .transaction-card h4, .client-card h4, .alert-card h4 {
+            margin: 0 0 10px 0;
+            color: #0056b3;
+            width: 100%;
+        }
+
+        .item-card p, .os-card p, .transaction-card p, .cash-history-card p, .client-card p, .alert-card p {
+            margin: 5px 0;
+            flex: 1 1 45%; /* Two columns layout for paragraphs */
+        }
+
+        .item-card .actions, .os-card .actions, .transaction-card .actions, .client-card .actions, .alert-card .actions {
+            flex: 1 1 100%; /* botões*/
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .item-card .actions button, .os-card .actions button, .transaction-card .actions button, .client-card .actions button, .alert-card .actions button {
+            padding: 10px 15px; /* Aumentado para um pouco maiores */
+            border: none;
+            border-radius: 8px; /* Mais arredondadas */
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para "mais bonitos" */
+        }
+
+        .item-card .actions button:hover,
+        .os-card .actions button:hover,
+        .transaction-card .actions button:hover,
+        .client-card .actions button:hover,
+        .alert-card .actions button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-card .actions .btn-edit { background-color: #ffc107; color: #333; }
+        .item-card .actions .btn-edit:hover { background-color: #e0a800; }
+        .item-card .actions .btn-add-to-cart { background-color: #28a745; color: white; }
+        .item-card .actions .btn-add-to-cart:hover { background-color: #218838; }
+
+        .os-card .actions .btn-edit-service { background-color: #17a2b8; color: white; }
+        .os-card .actions .btn-edit-service:hover { background-color: #138496; }
+        .os-card .actions .btn-finalize-os { background-color: #007bff; color: white; }
+        .os-card .actions .btn-finalize-os:hover { background-color: #0056b3; }
+        .os-card .actions .btn-print-os { background-color: #6c757d; color: white; }
+        .os-card .actions .btn-print-os:hover { background-color: #5a6268; }
+
+        .transaction-card .actions .btn-payment {
+            padding: 12px 18px; /* Aumentado para um pouco maiores */
+            font-weight: bold;
+            border-radius: 8px; /* Mais arredondadas */
+        }
+        .transaction-card .actions .btn-money { background-color: #28a745; }
+        .transaction-card .actions .btn-money:hover { background-color: #218838; }
+        .transaction-card .actions .btn-pix { background-color: #007bff; }
+        .transaction-card .actions .btn-pix:hover { background-color: #0056b3; }
+        .transaction-card .actions .btn-card { background-color: #6f42c1; } /* Purple */
+        .transaction-card .actions .btn-card:hover { background-color: #563d7c; }
+
+        .client-card .actions .btn-edit-client { background-color: #ffc107; color: #333; }
+        .client-card .actions .btn-edit-client:hover { background-color: #e0a800; }
+        .client-card .actions .btn-delete-client { background-color: #dc3545; color: white; }
+        .client-card .actions .btn-delete-client:hover { background-color: #c82333; }
+
+        .alert-card {
+            border-left: 5px solid #dc3545; /* Highlight with red border for 15+ days */
+        }
+        .alert-card h4 {
+            color: #dc3545; /* Red color for alert title */
+        }
+
+
+        .hidden-form {
+            display: none;
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .product-specific-fields {
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .product-field {
+            display: none; /* Default hidden for Cadastro form */
+        }
+
+        /* Display flex for product-specific fields when needed */
+        .product-specific-fields label { display: block; }
+        .product-specific-fields input { display: block; }
+
+        #cadastro-category:not([value="produto"]) ~ #product-specific-fields {
+            display: none;
+        }
+        #cadastro-category[value="produto"] ~ #product-specific-fields {
+            display: block;
+        }
+
+        /* Caixa and Relatório styles */
+        .caixa-summary, .lucro-total-monthly, .lucro-do-dia-summary {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .caixa-summary p, .lucro-total-monthly p, .lucro-do-dia-summary p {
+            margin: 5px 0;
+        }
+        .lucro-total-monthly span {
+            color: #28a745;
+            font-size: 1.3em;
+        }
+
+        .cash-history-card {
+            background-color: #f0f8ff;
+            border: 1px solid #b0c4de;
+        }
+
+        /* Modal specific styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 101; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width (ajustado de 70%) */
+            height: 100%; /* Full height (ajustado de 70%) */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 5% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Pode ser mais ou menos, dependendo do tamanho da tela */
+            max-width: 500px; /* Aumentado um pouco o max-width */
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #modal-services-list .item-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            background-color: #e9e9e9;
+        }
+
+        #modal-services-list .item-card p {
+            margin: 0;
+            font-weight: bold;
+        }
+
+        #modal-services-list .item-card button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 8px; /* Mais arredondadas */
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #modal-services-list .item-card button:hover {
+            background-color: #c82333;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        /* New table styles for daily profits */
+        #daily-profits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to content */
+        }
+
+        #daily-profits-table th,
+        #daily-profits-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        #daily-profits-table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #daily-profits-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        #daily-profits-table tr:hover {
+            background-color: #e2f4ff;
+        }
+
+        #daily-profits-table td:last-child {
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .fixed-nav {
+                position: static; /* Removes fixed positioning on small screens */
+                width: 100%;     /* Occupies full width */
+                height: auto;    /* Automatic height */
+                padding-top: 10px; /* Adjusts top padding */
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            .fixed-nav ul {
+                flex-direction: column; /* Stacks items vertically on small screens */
+                align-items: center;    /* Centers them */
+            }
+            .fixed-nav ul li {
+                margin: 5px 0; /* Vertical spacing between items */
+            }
+            main {
+                margin-left: 0; /* Removes offset on small screens */
+                padding-top: 20px; /* Adjusts content padding */
+                max-width: 100%; /* Permite que o conteúdo ocupe a largura total disponível */
+                margin-right: 0; /* Remove margem direita para mobile */
+            }
+            .item-card p, .os-card p, .transaction-card p, .cash-history-card p, .client-card p, .alert-card p {
+                flex: 1 1 100%; /* Stacks elements on small screens */
+            }
+            .item-card .actions, .os-card .actions, .transaction-card .actions, .client-card .actions, .alert-card .actions {
+                text-align: center;
+            }
+            .item-card .actions button, .os-card .actions button, .transaction-card .actions button, .client-card .actions button, .alert-card .actions button {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                /* Ajustar padding para botões de ação em mobile, se necessário */
+                padding: 12px 15px;
+            }
+            .modal-content {
+                width: 95%; /* Adjust for very small screens */
+                margin: 10% auto;
+            }
+
+            
+            
+            
+        }
+    </style>
+
+    
+   
+
+    <header>
+        <h1>Sistema de Gestão de Assistência Técnica</h1>
+    </header>
+    <div class="side-image-container">
+            <!-- Ícone de celular com letras "DF" usando SVG -->
+            <svg width="100%" height="100%" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Corpo do Celular -->
+                <rect x="25" y="10" width="150" height="280" rx="20" fill="#333" stroke="#555" stroke-width="5"/>
+                <!-- Tela do Celular -->
+                <rect x="35" y="25" width="130" height="230" rx="10" fill="#fff"/>
+                <!-- Texto "DF" na tela -->
+                <text x="100" y="150" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#007bff" text-anchor="middle" alignment-baseline="middle">DF</text>
+                <!-- Botão Home (opcional) -->
+                <circle cx="100" cy="270" r="10" fill="#555"/>
+            </svg>
+    </div>
+    <nav class="fixed-nav"> <!-- Fixed vertical navigation menu -->
+        <ul>
+            <li><a href="#" id="nav-vendas">Vendas</a></li>
+            <li><a href="#" id="nav-servicos">Serviços</a></li>
+            <li><a href="#" id="nav-clientes">Clientes</a></li>
+            <li><a href="#" id="nav-pesquisa">Pesquisa</a></li>
+            <li><a href="#" id="nav-cadastro">Cadastro</a></li>
+            <li><a href="#" id="nav-processo">Processo</a></li>
+            <li><a href="#" id="nav-financeiro">Financeiro</a></li>
+            <li><a href="#" id="nav-caixa">Caixa</a></li>
+            <li><a href="#" id="nav-relatorio-mensal">Relatório Mensal</a></li>
+            <li><a href="#" id="nav-alerta">Alertas</a></li>
+            <li><a href="#" id="nav-garantia">Garantia</a></li> <!-- New Warranty Link -->
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Sales Page -->
+        <section id="page-vendas" class="page-content active">
+            <h2>Vendas de Produtos</h2>
+            <div class="search-section">
+                <label for="search-product-sale">Pesquisar Produto:</label>
+                <input type="text" id="search-product-sale" placeholder="Nome do produto">
+                <button id="btn-search-product-sale">Pesquisar</button>
+            </div>
+            <div id="product-sale-results" class="results-list">
+                <!-- Product search results for sale -->
+            </div>
+            <h3>Itens no Carrinho:</h3>
+            <div id="sale-cart-items" class="results-list">
+                <!-- Products added for sale -->
+            </div>
+            <div class="cart-summary">
+                <p>Total do Carrinho: <span id="cart-total-display">R$ 0.00</span></p>
+                <button id="btn-finalizar-venda" class="btn-success">Finalizar Venda</button>
+            </div>
+        </section>
+
+        <!-- Services Page -->
+        <section id="page-servicos" class="page-content">
+            <h2>Criação de Ordem de Serviço</h2>
+            <h3>Selecionar Cliente Existente para a OS</h3>
+            <div class="search-section">
+                <label for="search-client-os">Pesquisar Cliente:</label>
+                <input type="text" id="search-client-os" placeholder="Nome do cliente">
+                <button id="btn-search-client-os">Pesquisar</button>
+            </div>
+            <div id="os-client-results" class="results-list">
+                <!-- Client search results for OS -->
+            </div>
+            <p><strong>Cliente Selecionado:</strong> <span id="selected-os-client-display">Nenhum</span></p>
+
+            <form id="os-service-form">
+                <h3>Detalhes da OS</h3>
+                <label for="os-cliente-nome">Nome do Cliente:</label>
+                <input type="text" id="os-cliente-nome" readonly required> <!-- Made readonly -->
+
+                <label for="os-whatsapp">WhatsApp:</label>
+                <input type="text" id="os-whatsapp" readonly required> <!-- Made readonly -->
+
+                <label for="os-endereco">Endereço:</label>
+                <input type="text" id="os-endereco" readonly required> <!-- Made readonly -->
+
+                <label for="os-tecnico-responsavel">Técnico Responsável:</label>
+                <input type="text" id="os-tecnico-responsavel" required>
+
+                <label for="os-modelo-aparelho">Modelo do Aparelho:</label>
+                <input type="text" id="os-modelo-aparelho" required>
+
+                <label for="os-cor-aparelho">Cor do Aparelho:</label>
+                <input type="text" id="os-cor-aparelho" required>
+
+                <label for="os-defeito-relatado">Defeito Relatado pelo Cliente:</label>
+                <textarea id="os-defeito-relatado" rows="3" required></textarea>
+
+                <label for="os-servico-escolhido">Serviço Principal Escolhido:</label>
+                <input type="text" id="os-servico-escolhido" readonly required>
+                <input type="hidden" id="os-servico-id-hidden">
+                <input type="hidden" id="os-servico-valor-hidden">
+                <!-- No need for hidden cost here, it will be pulled from services array directly -->
+
+                <button type="submit" id="btn-processar-os">Processar OS</button>
+            </form>
+            <div class="search-section" style="margin-top: 30px;">
+                <label for="search-service">Pesquisar Serviço:</label>
+                <input type="text" id="search-service" placeholder="Nome do serviço">
+                <button id="btn-search-service">Pesquisar</button>
+            </div>
+            <h3>Serviços Disponíveis</h3>
+            <div id="available-services-list" class="results-list">
+                <!-- List of registered services -->
+            </div>
+        </section>
+
+        <!-- Client Management Page -->
+        <section id="page-clientes" class="page-content">
+            <h2>Cadastro de Clientes</h2>
+            <form id="cadastro-cliente-form">
+                <label for="cliente-name">Nome do Cliente:</label>
+                <input type="text" id="cliente-name" required>
+
+                <label for="cliente-whatsapp">WhatsApp:</label>
+                <input type="text" id="cliente-whatsapp" required>
+
+                <label for="cliente-address">Endereço:</label>
+                <input type="text" id="cliente-address" required>
+
+                <button type="submit" id="btn-cadastrar-cliente">Cadastrar Cliente</button>
+            </form>
+
+            <h2>Clientes Cadastrados</h2>
+            <div class="search-section">
+                <label for="search-client">Pesquisar Cliente:</label>
+                <input type="text" id="search-client" placeholder="Nome do cliente">
+                <button id="btn-search-client">Pesquisar</button>
+            </div>
+            <div id="client-list" class="results-list">
+                <!-- Client list will be rendered here -->
+            </div>
+
+            <!-- Edit Client Form (initially hidden) -->
+            <form id="edit-client-form" class="hidden-form">
+                <h3>Editar Cliente</h3>
+                <input type="hidden" id="edit-client-id">
+                
+                <label for="edit-client-name">Nome:</label>
+                <input type="text" id="edit-client-name" required>
+
+                <label for="edit-client-whatsapp">WhatsApp:</label>
+                <input type="text" id="edit-client-whatsapp" required>
+
+                <label for="edit-client-address">Endereço:</label>
+                <input type="text" id="edit-client-address" required>
+
+                <button type="submit" id="btn-save-client-edit">Salvar Edição</button>
+                <button type="button" id="btn-cancel-client-edit" class="btn-secondary">Cancelar</button>
+            </form>
+        </section>
+
+        <!-- Search Page -->
+        <section id="page-pesquisa" class="page-content">
+            <h2>Pesquisa e Edição de Produtos/Serviços</h2>
+            <div class="search-section">
+                <label for="search-item">Pesquisar por Nome:</label>
+                <input type="text" id="search-item" placeholder="Nome do produto ou serviço">
+                <button id="btn-search-item">Pesquisar</button>
+            </div>
+            <div id="search-results" class="results-list">
+                <!-- Search results -->
+            </div>
+            <!-- Edit Form (initially hidden) -->
+            <form id="edit-item-form" class="hidden-form">
+                <h3>Editar Item</h3>
+                <input type="hidden" id="edit-item-id">
+                <input type="hidden" id="edit-item-category-hidden">
+
+                <label for="edit-item-name">Nome:</label>
+                <input type="text" id="edit-item-name" required>
+
+                <label for="edit-item-color" class="product-field">Cor:</label>
+                <input type="text" id="edit-item-color" class="product-field">
+
+                <label for="edit-item-quantity" class="product-field">Quantidade:</label>
+                <input type="number" id="edit-item-quantity" class="product-field" min="0" required>
+
+                <label for="edit-item-cost">Valor Pago (Custo):</label>
+                <input type="number" id="edit-item-cost" step="0.01" required>
+
+                <label for="edit-item-value">Valor de Venda:</label>
+                <input type="number" id="edit-item-value" step="0.01" required>
+
+                <button type="submit" id="btn-save-edit">Salvar Edição</button>
+                <button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button>
+            </form>
+        </section>
+
+        <!-- Registration Page -->
+        <section id="page-cadastro" class="page-content">
+            <h2>Cadastro de Produtos e Serviços</h2>
+            <form id="cadastro-form">
+                <label for="cadastro-name">Nome do Produto/Serviço:</label>
+                <input type="text" id="cadastro-name" required>
+
+                <label for="cadastro-category">Categoria:</label>
+                <select id="cadastro-category" required>
+                    <option value="">Selecione</option>
+                    <option value="produto">Produto</option>
+                    <option value="servico">Serviço</option>
+                </select>
+
+                <div id="product-specific-fields">
+                    <label for="cadastro-quantity">Quantidade:</label>
+                    <input type="number" id="cadastro-quantity" min="0">
+                    <label for="cadastro-color">Cor:</label>
+                    <input type="text" id="cadastro-color">
+                </div>
+
+                <label for="cadastro-cost">Valor Pago (Custo):</label>
+                <input type="number" id="cadastro-cost" step="0.01" required>
+
+                <label for="cadastro-value">Valor de Venda:</label>
+                <input type="number" id="cadastro-value" step="0.01" required>
+
+                <button type="submit" id="btn-cadastrar">Cadastrar</button>
+            </form>
+        </section>
+
+        <!-- Process Page -->
+        <section id="page-processo" class="page-content">
+            <h2>Ordens de Serviço em Processo</h2>
+            <div id="os-processo-list">
+                <!-- OS in process will be listed here -->
+            </div>
+        </section>
+
+        <!-- Financial Page -->
+        <section id="page-financeiro" class="page-content">
+            <h2>Registro de Pagamentos (Vendas e OS)</h2>
+            <div id="financeiro-list">
+                <!-- Sales and OS to be paid will be listed here -->
+            </div>
+        </section>
+
+        <!-- Cashier Page -->
+        <section id="page-caixa" class="page-content">
+            <h2>Caixa Atual</h2>
+            <div class="lucro-do-dia-summary" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+                <p>Lucro do Dia (Saldo Líquido): <span id="lucro-do-dia-display">R$ 0.00</span></p>
+            </div>
+
+            <!-- Daily Profits Table Display -->
+            <div id="daily-profits-table-container"></div>
+
+            <div class="caixa-summary">
+                <p>Dinheiro: <span id="caixa-dinheiro">R$ 0.00</span></p>
+                <p>PIX: <span id="caixa-pix">R$ 0.00</span></p>
+                <p>Cartão: <span id="caixa-cartao">R$ 0.00</span></p>
+            </div>
+            
+            <h3>Registrar Saída</h3>
+            <form id="saida-form">
+                <label for="saida-valor">Valor da Saída:</label>
+                <input type="number" id="saida-valor" step="0.01" required>
+                <label for="saida-origem">Forma de Saída:</label>
+                <select id="saida-origem" required>
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">PIX</option>
+                    <option value="cartao">Cartão</option>
+                </select>
+                <label for="saida-descricao">Descrição:</label>
+                <input type="text" id="saida-descricao" required>
+                <button type="submit" id="btn-registrar-saida">Registrar Saída</button>
+            </form>
+            <h3>Histórico de Saídas</h3>
+            <div id="saida-history" class="results-list">
+                <!-- History of exits -->
+            </div>
+            <button id="btn-finalizar-dia" class="btn-danger">Finalizar Dia</button>
+        </section>
+
+        <!-- Monthly Report Page -->
+        <section id="page-relatorio-mensal" class="page-content">
+            <h2>Relatório Mensal de Lucros</h2>
+            <div class="lucro-total-monthly">
+                Lucro Total do Mês: <span id="monthly-profit-display">R$ 0.00</span>
+            </div>
+            <div id="monthly-report-list" class="results-list">
+                <!-- OS and Sales of the month -->
+            </div>
+            <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button id="btn-generate-detailed-report" class="btn-primary">Gerar Relatório Detalhado do Mês</button>
+                <button id="btn-finalizar-mes" class="btn-primary">Finalizar Mês</button>
+            </div>
+
+            <div id="monthly-detailed-report-display" class="hidden-form" style="margin-top: 30px;">
+                <h3>Relatório Detalhado do Mês</h3>
+                <div id="detailed-report-content">
+                    <!-- Detailed report content will be inserted here -->
+                </div>
+                <button id="btn-close-detailed-report" class="btn-secondary" style="margin-top: 20px;">Fechar Relatório</button>
+            </div>
+        </section>
+
+        <!-- Alert Page -->
+        <section id="page-alerta" class="page-content">
+            <h2>Alertas de Ordens de Serviço Antigas e Finalizadas</h2>
+            <p>Ordens de Serviço finalizadas e pagas que completaram entre 15 e 20 dias desde a finalização:</p>
+            <div id="os-alert-list" class="results-list">
+                <!-- OS alerts will be listed here -->
+            </div>
+        </section>
+
+        <!-- Warranty Page (New) -->
+        <section id="page-garantia" class="page-content">
+            <h2>Serviços em Período de Garantia (Últimos 90 dias)</h2>
+            <div class="search-section">
+                <label for="search-warranty-os">Pesquisar OS de Garantia:</label>
+                <input type="text" id="search-warranty-os" placeholder="Nome do cliente, serviço, aparelho ou OS #">
+                <button id="btn-search-warranty-os">Pesquisar</button>
+            </div>
+            <div id="warranty-os-list" class="results-list">
+                <!-- Warranty OS will be listed here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Edição de Serviços da OS -->
+    <div id="editServicesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeEditServicesModal">&times;</span>
+            <h2>Editar Serviços da OS <span id="modal-os-id"></span></h2>
+            
+            <h3>Serviços Atuais:</h3>
+            <div id="modal-services-list" class="results-list">
+                <!-- Current services for the OS will be listed here -->
+            </div>
+
+            <h3>Adicionar Novo Serviço:</h3>
+            <div class="search-section">
+                <label for="search-service-modal">Pesquisar Serviço:</label>
+                <input type="text" id="search-service-modal" placeholder="Nome do serviço">
+                <button id="btn-search-service-modal">Pesquisar</button>
+            </div>
+            <div id="available-services-modal-list" class="results-list">
+                <!-- Available services for adding to OS -->
+            </div>
+            <hr style="margin: 20px 0;"> <!-- Separator -->
+            <label for="modal-valor-peca-substituida">Custo Total das Peças para esta OS:</label>
+            <input type="number" id="modal-valor-peca-substituida" step="0.01" value="0" required>
+            <div class="actions" style="margin-top: 20px;">
+                <button id="btn-save-services-edit" class="btn-success">Salvar Serviços e Custo</button>
+                <button id="btn-cancel-services-edit" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // --- System Data (Simulated with localStorage) ---
+        let products = []; // Armazena produtos (com quantidade)
+        let services = []; // Armazena serviços
+        let orders = []; // Armazena Ordens de Serviço (OS)
+        let sales = []; // Armazena vendas de produtos finalizadas
+        let transactions = []; // Armazena todos os pagamentos (vendas e OS)
+        let caixa = { // Saldos do caixa
+            dinheiro: 0,
+            pix: 0,
+            cartao: 0
+        };
+        let saidaHistory = []; // Histórico de saídas do caixa
+        let clients = []; // Armazena dados de clientes
+        // NEW: Stores daily profit summaries
+        let dailyProfitsHistory = []; 
+
+        let editingOSId = null; // Variável global para armazenar o ID da OS sendo editada
+
+        // Carrega todos os dados do localStorage
+        function loadData() {
+            products = JSON.parse(localStorage.getItem('products')) || [];
+            services = JSON.parse(localStorage.getItem('services')) || [];
+            orders = JSON.parse(localStorage.getItem('orders')) || [];
+            sales = JSON.parse(localStorage.getItem('sales')) || [];
+            transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            caixa = JSON.parse(localStorage.getItem('caixa')) || { dinheiro: 0, pix: 0, cartao: 0 };
+            saidaHistory = JSON.parse(localStorage.getItem('saidaHistory')) || [];
+            clients = JSON.parse(localStorage.getItem('clients')) || []; // Carrega clientes
+            // NEW: Load daily profits history
+            dailyProfitsHistory = JSON.parse(localStorage.getItem('dailyProfitsHistory')) || []; 
+        }
+
+        // Salva todos os dados no localStorage
+        function saveData() {
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('services', JSON.stringify(services));
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('caixa', JSON.stringify(caixa));
+            localStorage.setItem('saidaHistory', JSON.stringify(saidaHistory));
+            localStorage.setItem('clients', JSON.stringify(clients)); // Salva clientes
+            // NEW: Save daily profits history
+            localStorage.setItem('dailyProfitsHistory', JSON.stringify(dailyProfitsHistory)); 
+        }
+
+        // --- Page Navigation ---
+        const navLinks = {
+            'nav-vendas': 'page-vendas',
+            'nav-servicos': 'page-servicos',
+            'nav-clientes': 'page-clientes',
+            'nav-pesquisa': 'page-pesquisa',
+            'nav-cadastro': 'page-cadastro',
+            'nav-processo': 'page-processo',
+            'nav-financeiro': 'page-financeiro',
+            'nav-caixa': 'page-caixa',
+            'nav-relatorio-mensal': 'page-relatorio-mensal',
+            'nav-alerta': 'page-alerta',
+            'nav-garantia': 'page-garantia' // Nova: Navegação de Garantia
+        };
+
+        // Helper para copiar para a área de transferência
+        window.copyToClipboard = function(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('WhatsApp copiado para a área de transferência: ' + text);
+            } catch (err) {
+                console.error('Falha ao copiar:', err);
+                alert('Falha ao copiar o WhatsApp. Por favor, tente manualmente.');
+            }
+            document.body.removeChild(textarea);
+        };
+
+        // --- Funções da Página de Vendas ---
+        let currentSaleCart = []; // Carrinho temporário para a venda atual
+
+        function renderProductSaleResults(results) {
+            const productSaleResultsDiv = document.getElementById('product-sale-results');
+            const searchProductSaleInput = document.getElementById('search-product-sale');
+
+            productSaleResultsDiv.innerHTML = '';
+            if (results.length === 0 && searchProductSaleInput.value.trim() !== '') {
+                productSaleResultsDiv.innerHTML = '<p>Nenhum produto encontrado com este termo ou sem estoque.</p>';
+                return;
+            }
+            if (results.length === 0 && searchProductSaleInput.value.trim() === '') {
+                productSaleResultsDiv.innerHTML = '<p>Digite um termo para pesquisar produtos disponíveis.</p>';
+                return;
+            }
+
+            results.forEach(product => {
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <h4>${product.name} (${product.color || 'N/A'})</h4>
+                    <p>Quantidade em Estoque: ${product.quantity}</p>
+                    <p>Valor: R$ ${product.value.toFixed(2)}</p>
+                    <div class="actions">
+                        <button class="btn-add-to-cart" data-id="${product.id}">Adicionar (1)</button>
+                    </div>
+                `;
+                productSaleResultsDiv.appendChild(card);
+            });
+
+            productSaleResultsDiv.querySelectorAll('.btn-add-to-cart').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = parseInt(e.target.dataset.id);
+                    addToCart(productId);
+                });
+            });
+        }
+
+        function addToCart(productId) {
+            const searchProductSaleInput = document.getElementById('search-product-sale');
+            const productIndex = products.findIndex(p => p.id === productId);
+            if (productIndex > -1 && products[productIndex].quantity > 0) {
+                const productInCartIndex = currentSaleCart.findIndex(item => item.id === productId);
+
+                if (productInCartIndex > -1) {
+                    currentSaleCart[productInCartIndex].quantity++;
+                } else {
+                    currentSaleCart.push({ ...products[productIndex], quantity: 1 });
+                }
+
+                products[productIndex].quantity--; // Decrementa do estoque
+                saveData();
+                renderCartItems();
+                // Re-renderiza os resultados da pesquisa para mostrar o estoque atualizado
+                renderProductSaleResults(products.filter(p => p.name.toLowerCase().includes(searchProductSaleInput.value.toLowerCase().trim()) && p.quantity > 0));
+            } else {
+                alert('Produto sem estoque ou não encontrado!');
+            }
+        }
+
+        function renderCartItems() {
+            const saleCartItemsDiv = document.getElementById('sale-cart-items');
+            const cartTotalDisplay = document.getElementById('cart-total-display');
+
+            saleCartItemsDiv.innerHTML = '';
+            let totalCart = 0;
+            if (currentSaleCart.length === 0) {
+                saleCartItemsDiv.innerHTML = '<p>Carrinho vazio.</p>';
+                cartTotalDisplay.textContent = 'R$ 0.00';
+                return;
+            }
+            currentSaleCart.forEach((item, index) => {
+                totalCart += item.value * item.quantity;
+                const itemCard = document.createElement('div');
+                itemCard.classList.add('item-card');
+                itemCard.innerHTML = `
+                    <p>${item.name} (${item.color || 'N/A'}) - Qtd: ${item.quantity} x R$ ${item.value.toFixed(2)} = R$ ${(item.value * item.quantity).toFixed(2)}</p>
+                    <div class="actions">
+                        <button class="btn-danger" data-index="${index}">Remover</button>
+                    </div>
+                `;
+                saleCartItemsDiv.appendChild(itemCard);
+            });
+            cartTotalDisplay.textContent = `R$ ${totalCart.toFixed(2)}`;
+
+            saleCartItemsDiv.querySelectorAll('.btn-danger').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemIndex = parseInt(e.target.dataset.index);
+                    removeFromCart(itemIndex);
+                });
+            });
+        }
+
+        function removeFromCart(itemIndex) {
+            const searchProductSaleInput = document.getElementById('search-product-sale');
+            const removedItem = currentSaleCart.splice(itemIndex, 1)[0];
+            const productInStockIndex = products.findIndex(p => p.id === removedItem.id);
+            if (productInStockIndex > -1) {
+                products[productInStockIndex].quantity += removedItem.quantity; // Retorna ao estoque
+            }
+            saveData();
+            renderCartItems();
+            // Re-renderiza os resultados da pesquisa para mostrar o estoque atualizado
+            renderProductSaleResults(products.filter(p => p.name.toLowerCase().includes(searchProductSaleInput.value.toLowerCase().trim()) && p.quantity > 0));
+        }
+
+        // --- Funções da Página de Serviços ---
+        function renderAvailableServices(servicesToRender = services.filter(s => s.category === 'servico')) {
+            const availableServicesList = document.getElementById('available-services-list');
+            const searchServiceInput = document.getElementById('search-service');
+            const osServicoEscolhidoInput = document.getElementById('os-servico-escolhido');
+            const osServicoIdHidden = document.getElementById('os-servico-id-hidden');
+            const osServicoValorHidden = document.getElementById('os-servico-valor-hidden');
+
+            availableServicesList.innerHTML = '';
+            if (servicesToRender.length === 0 && searchServiceInput.value.trim() !== '') {
+                availableServicesList.innerHTML = '<p>Nenhum serviço encontrado com este termo.</p>';
+                return;
+            }
+            if (servicesToRender.length === 0 && searchServiceInput.value.trim() === '') {
+                availableServicesList.innerHTML = '<p>Nenhum serviço cadastrado.</p>';
+                return;
+            }
+
+            servicesToRender.forEach(service => {
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <h4>${service.name}</h4>
+                    <p>Valor: R$ ${service.value.toFixed(2)}</p>
+                    <div class="actions">
+                        <button class="btn-success select-primary-service" data-id="${service.id}" data-name="${service.name}" data-value="${service.value}" data-cost="${service.cost}">Selecionar Serviço</button>
+                    </div>
+                `;
+                availableServicesList.appendChild(card);
+            });
+
+            availableServicesList.querySelectorAll('.select-primary-service').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    osServicoEscolhidoInput.value = e.target.dataset.name;
+                    osServicoIdHidden.value = e.target.dataset.id;
+                    osServicoValorHidden.value = e.target.dataset.value;
+                    // Aqui precisamos armazenar o custo do serviço escolhido para a criação da OS
+                    // Vamos anexá-lo diretamente ao botão para fácil recuperação durante o envio do formulário
+                    e.target.dataset.cost = services.find(s => s.id === parseInt(e.target.dataset.id)).cost;
+
+                    alert(`Serviço "${e.target.dataset.name}" selecionado como principal para a OS.`);
+                });
+            });
+        }
+
+        function renderClientsForOS(clientsToRender = clients) {
+            const osClientResultsDiv = document.getElementById('os-client-results');
+            const searchClientOSInput = document.getElementById('search-client-os');
+            const osClienteNomeInput = document.getElementById('os-cliente-nome');
+            const osWhatsappInput = document.getElementById('os-whatsapp');
+            const osEnderecoInput = document.getElementById('os-endereco');
+            const selectedOSClientDisplay = document.getElementById('selected-os-client-display');
+
+            osClientResultsDiv.innerHTML = '';
+            if (clientsToRender.length === 0 && searchClientOSInput.value.trim() !== '') {
+                osClientResultsDiv.innerHTML = '<p>Nenhum cliente encontrado com este termo.</p>';
+                return;
+            }
+            if (clientsToRender.length === 0 && searchClientOSInput.value.trim() === '') {
+                osClientResultsDiv.innerHTML = '<p>Digite um termo para pesquisar clientes ou cadastre um novo na aba "Clientes".</p>';
+                return;
+            }
+
+            clientsToRender.forEach(client => {
+                const card = document.createElement('div');
+                card.classList.add('client-card'); // Reutilizando o estilo client-card para consistência
+                card.innerHTML = `
+                    <h4>${client.name}</h4>
+                    <p>WhatsApp: ${client.whatsapp}</p>
+                    <p>Endereço: ${client.address}</p>
+                    <div class="actions">
+                        <button class="btn-primary select-os-client" data-id="${client.id}" data-name="${client.name}" data-whatsapp="${client.whatsapp}" data-address="${client.address}">Selecionar</button>
+                    </div>
+                `;
+                osClientResultsDiv.appendChild(card);
+            });
+
+            osClientResultsDiv.querySelectorAll('.select-os-client').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const clientId = parseInt(e.target.dataset.id);
+                    const clientName = e.target.dataset.name;
+                    const clientWhatsapp = e.target.dataset.whatsapp;
+                    const clientAddress = e.target.dataset.address;
+
+                    osClienteNomeInput.value = clientName;
+                    osWhatsappInput.value = clientWhatsapp;
+                    osEnderecoInput.value = clientAddress;
+                    selectedOSClientDisplay.textContent = clientName; // Atualiza o span de exibição
+                    alert(`Cliente "${clientName}" selecionado para a OS.`);
+                });
+            });
+        }
+
+        // --- Funções da Página de Gerenciamento de Clientes ---
+        function renderClients(clientsToRender = clients) {
+            const clientListDiv = document.getElementById('client-list');
+            const searchClientInput = document.getElementById('search-client');
+
+            clientListDiv.innerHTML = '';
+            if (clientsToRender.length === 0) {
+                clientListDiv.innerHTML = '<p>Nenhum cliente cadastrado.</p>';
+                return;
+            }
+
+            clientsToRender.forEach(client => {
+                const card = document.createElement('div');
+                card.classList.add('client-card');
+                card.innerHTML = `
+                    <h4>${client.name}</h4>
+                    <p>WhatsApp: ${client.whatsapp}</p>
+                    <p>Endereço: ${client.address}</p>
+                    <div class="actions">
+                        <button class="btn-edit-client" data-id="${client.id}">Editar</button>
+                        <button class="btn-delete-client" data-id="${client.id}">Excluir</button>
+                    </div>
+                `;
+                clientListDiv.appendChild(card);
+            });
+
+            clientListDiv.querySelectorAll('.btn-edit-client').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const clientId = parseInt(e.target.dataset.id);
+                    editClient(clientId);
+                });
+            });
+
+            clientListDiv.querySelectorAll('.btn-delete-client').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const clientId = parseInt(e.target.dataset.id);
+                    deleteClient(clientId);
+                });
+            });
+        }
+
+        function editClient(clientId) {
+            const editClientForm = document.getElementById('edit-client-form');
+            const editClientId = document.getElementById('edit-client-id');
+            const editClientName = document.getElementById('edit-client-name');
+            const editClientWhatsapp = document.getElementById('edit-client-whatsapp');
+            const editClientAddress = document.getElementById('edit-client-address');
+
+            const clientToEdit = clients.find(c => c.id === clientId);
+            if (clientToEdit) {
+                editClientForm.style.display = 'grid';
+                editClientId.value = clientToEdit.id;
+                editClientName.value = clientToEdit.name;
+                editClientWhatsapp.value = clientToEdit.whatsapp;
+                editClientAddress.value = clientToEdit.address;
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); // Rola para o formulário
+            }
+        }
+
+        function deleteClient(clientId) {
+            const confirmDelete = confirm('Tem certeza que deseja excluir este cliente?');
+            if (confirmDelete) {
+                clients = clients.filter(client => client.id !== clientId);
+                saveData();
+                alert('Cliente excluído com sucesso!');
+                renderClients(); // Re-renderiza a lista
+            }
+        }
+
+        // --- Funções da Página de Pesquisa ---
+        function renderSearchResults(results) {
+            const searchResultsDiv = document.getElementById('search-results');
+            const searchItemInput = document.getElementById('search-item');
+
+            searchResultsDiv.innerHTML = '';
+            if (results.length === 0 && searchItemInput.value.trim() !== '') {
+                searchResultsDiv.innerHTML = '<p>Nenhum item encontrado com este termo.</p>';
+                return;
+            }
+             if (results.length === 0 && searchItemInput.value.trim() === '') {
+                searchResultsDiv.innerHTML = '<p>Digite um termo para pesquisar produtos ou serviços.</p>';
+                return;
+            }
+            results.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <h4>${item.name} (${item.category === 'produto' ? 'Produto' : 'Serviço'})</h4>
+                    <p>Valor de Venda: R$ ${item.value.toFixed(2)}</p>
+                    ${item.category === 'produto' ? `<p>Quantidade: ${item.quantity}</p><p>Cor: ${item.color || 'N/A'}</p>` : ''}
+                    <div class="actions">
+                        <button class="btn-edit" data-id="${item.id}" data-category="${item.category}">Editar</button>
+                    </div>
+                `;
+                searchResultsDiv.appendChild(card);
+            });
+
+            searchResultsDiv.querySelectorAll('.btn-edit').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = parseInt(e.target.dataset.id);
+                    const itemCategory = e.target.dataset.category;
+                    editItem(itemId, itemCategory);
+                });
+            });
+        }
+
+        function editItem(id, category) {
+            const editItemForm = document.getElementById('edit-item-form');
+            const editItemId = document.getElementById('edit-item-id');
+            const editItemCategoryHidden = document.getElementById('edit-item-category-hidden');
+            const editItemName = document.getElementById('edit-item-name');
+            const editItemColor = document.getElementById('edit-item-color');
+            const editItemQuantity = document.getElementById('edit-item-quantity');
+            const editItemCost = document.getElementById('edit-item-cost');
+            const editItemValue = document.getElementById('edit-item-value');
+
+            let itemToEdit;
+            if (category === 'produto') {
+                itemToEdit = products.find(p => p.id === id);
+                document.querySelectorAll('.product-field').forEach(el => el.style.display = 'block');
+                editItemColor.required = true;
+                editItemQuantity.required = true;
+            } else {
+                itemToEdit = services.find(s => s.id === id);
+                document.querySelectorAll('.product-field').forEach(el => el.style.display = 'none');
+                editItemColor.required = false;
+                editItemQuantity.required = false;
+            }
+
+            if (itemToEdit) {
+                editItemForm.style.display = 'grid';
+                editItemId.value = itemToEdit.id;
+                editItemCategoryHidden.value = category;
+                editItemName.value = itemToEdit.name;
+                editItemColor.value = itemToEdit.color || '';
+                editItemQuantity.value = itemToEdit.quantity || 0;
+                editItemCost.value = itemToEdit.cost;
+                editItemValue.value = itemToEdit.value;
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); // Rola para o formulário
+            }
+        }
+
+        // Helper para atualizar valorFinalOS
+        function updateValorFinalOS(os) {
+            let totalServicesValue = 0;
+            if (os.services && os.services.length > 0) {
+                totalServicesValue = os.services.reduce((sum, service) => sum + service.value, 0);
+            }
+            os.valorFinalOS = totalServicesValue + (os.valorPecaSubstituida || 0);
+        }
+
+        // --- Funções da Página de Processo ---
+        function renderProcessOrders() {
+            const osProcessoListDiv = document.getElementById('os-processo-list');
+
+            osProcessoListDiv.innerHTML = '';
+            const processoOrders = orders.filter(os => os.status === 'processo');
+
+            if (processoOrders.length === 0) {
+                osProcessoListDiv.innerHTML = '<p>Nenhuma OS em processo no momento.</p>';
+                return;
+            }
+
+            processoOrders.forEach(os => {
+                // Exibe serviços para a OS
+                const servicesListHtml = os.services.map(s => `<li>${s.name} (R$ ${s.value.toFixed(2)})</li>`).join('');
+                
+                const card = document.createElement('div');
+                card.classList.add('os-card');
+                card.innerHTML = `
+                    <h4>OS #${os.id} - ${os.clienteNome}</h4>
+                    <p>Modelo do Aparelho: ${os.modeloAparelho}</p>
+                    <p>Técnico Responsável: ${os.tecnicoResponsavel}</p>
+                    <p>Serviços: ${servicesListHtml}</p>
+                    <label for="pecas-substituidas-${os.id}">Peças Substituídas:</label>
+                    <input type="text" id="pecas-substituidas-${os.id}" value="${os.pecasSubstituidas || ''}">
+                    <label for="relatorio-defeito-${os.id}">Relatório de Defeito / Observações:</label>
+                    <textarea id="relatorio-defeito-${os.id}" rows="2">${os.relatorioDefeito || ''}</textarea>
+                    <div class="actions">
+                        <button class="btn-edit-service" data-id="${os.id}">Editar Serviços</button>
+                        <button class="btn-finalize-os" data-id="${os.id}">Finalizar OS</button>
+                        <button class="btn-print-os" data-id="${os.id}">Imprimir OS</button>
+                    </div>
+                `;
+                osProcessoListDiv.appendChild(card);
+            });
+
+            osProcessoListDiv.querySelectorAll('.btn-finalize-os').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const osId = parseInt(e.target.dataset.id);
+                    finalizeOS(osId);
+                });
+            });
+
+            osProcessoListDiv.querySelectorAll('.btn-print-os').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const osId = parseInt(e.target.dataset.id);
+                    printOS(osId);
+                });
+            });
+
+            osProcessoListDiv.querySelectorAll('.btn-edit-service').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const osId = parseInt(e.target.dataset.id);
+                    openEditServicesModal(osId);
+                });
+            });
+        }
+
+        function finalizeOS(osId) {
+            const osIndex = orders.findIndex(os => os.id === osId);
+            if (osIndex > -1) {
+                const os = orders[osIndex];
+                os.pecasSubstituidas = document.getElementById(`pecas-substituidas-${osId}`).value.trim();
+                os.relatorioDefeito = document.getElementById(`relatorio-defeito-${osId}`).value.trim();
+                
+                updateValorFinalOS(os);
+
+                os.status = 'financeiro'; // Envia para o Financeiro
+                os.finalizedDate = new Date().toLocaleDateString('pt-BR'); // Armazena a data de finalização
+
+                saveData();
+                alert(`OS #${os.id} finalizada e enviada para o Financeiro!`);
+                renderProcessOrders(); // Atualiza a lista
+                showPage('page-financeiro');
+            }
+        }
+
+        function printOS(osId) {
+            const os = orders.find(os => os.id === osId);
+            if (!os) {
+                alert('OS não encontrada para impressão.');
+                return;
+            }
+
+            const currentPecasSubstituidas = document.getElementById(`pecas-substituidas-${os.id}`).value.trim();
+            const currentRelatorioDefeito = document.getElementById(`relatorio-defeito-${os.id}`).value.trim();
+
+            const calculatedValorFinalOS = os.valorFinalOS; 
+
+            const servicesHtml = os.services.map(s => `<li>${s.name} (R$ ${s.value.toFixed(2)})</li>`).join('');
+
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Ordem de Serviço #${os.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 25px; line-height: 1.6; color: #333; }
+                        h1 { text-align: center; color: #0056b3; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+                        .os-details p { margin: 5px 0; }
+                        .os-details strong { color: #555; }
+                        .section-title { font-size: 1.2em; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: #007bff;}
+                        .footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #777; border-top: 1px solid #eee; padding-top: 15px;}
+                        .total-value { font-size: 1.3em; font-weight: bold; text-align: right; margin-top: 20px; color: #28a745;}
+                        ul { list-style-type: disc; margin-left: 20px;}
+                    </style>
+                </head>
+                <body>
+                    <h1>Ordem de Serviço #${os.id}</h1>
+                    <div class="os-details">
+                        <p><strong>Data de Criação:</strong> ${os.date}</p>
+                        <p><strong>Data de Finalização:</strong> ${os.finalizedDate || 'Não Finalizada'}</p>
+                        <p><strong>Técnico Responsável:</strong> ${os.tecnicoResponsavel}</p>
+
+                        <h3 class="section-title">Dados do Cliente</h3>
+                        <p><strong>Nome:</strong> ${os.clienteNome}</p>
+                        <p><strong>WhatsApp:</strong> ${os.clienteWhatsapp}</p>
+                        <p><strong>Endereço:</strong> ${os.clienteEndereco}</p>
+
+                        <h3 class="section-title">Dados do Aparelho</h3>
+                        <p><strong>Modelo:</strong> ${os.modeloAparelho}</p>
+                        <p><strong>Cor:</strong> ${os.corAparelho}</p>
+                        <p><strong>Defeito Relatado:</strong> ${os.defeitoRelatado}</p>
+
+                        <h3 class="section-title">Serviços e Peças</h3>
+                        <p><strong>Serviços Contratados:</strong></p>
+                        <ul>${servicesHtml}</ul>
+                        <p><strong>Peças Substituídas:</strong> ${currentPecasSubstituidas || 'N/A'}</p>
+                        <p><strong>Relatório Técnico:</strong> ${currentRelatorioDefeito || 'N/A'}</p>
+                        <p class="total-value"><strong>VALOR FINAL DA OS: R$ ${calculatedValorFinalOS.toFixed(2)}</strong></p>
+                    </div>
+                    <div class="footer">
+                        Obrigado por escolher nossos serviços!
+                        <br>
+                        Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- Funções da Página Financeira ---
+        function renderFinanceiroItems() {
+            const financeiroListDiv = document.getElementById('financeiro-list');
+
+            financeiroListDiv.innerHTML = '';
+            const financeiroItems = [
+                ...orders.filter(os => os.status === 'financeiro'),
+                ...sales.filter(sale => sale.status === 'financeiro')
+            ];
+            console.log('Array de vendas ao renderizar itens financeiros:', sales); // Log de depuração
+            console.log('Itens financeiros filtrados:', financeiroItems); // Log de depuração
+
+
+            if (financeiroItems.length === 0) {
+                financeiroListDiv.innerHTML = '<p>Nenhuma venda ou OS aguardando pagamento.</p>';
+                return;
+            }
+
+            financeiroItems.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('transaction-card');
+                const isOS = item.type === 'os';
+                const value = isOS ? item.valorFinalOS : item.valorFinal;
+                let description;
+                let calculatedCost = 0; // Calcula o custo total para exibição e transação
+                if (isOS) {
+                    const serviceNames = item.services.map(s => s.name).join(', ');
+                    description = `OS #${item.id} - ${serviceNames} (${item.modeloAparelho})`;
+                    calculatedCost = (item.services.reduce((sum, s) => sum + (s.cost || 0), 0)) + (item.valorPecaSubstituida || 0);
+                } else {
+                    description = `Venda #${item.id} - ${item.items.map(i => i.name).join(', ')}`;
+                    calculatedCost = item.valorPeca;
+                }
+                
+                card.innerHTML = `
+                    <h4>${isOS ? 'Serviço' : 'Venda'}: ${description}</h4>
+                    <p>Valor Total: <strong>R$ ${value.toFixed(2)}</strong></p>
+                    <div class="actions">
+                        <button class="btn-payment btn-money" data-id="${item.id}" data-type="${item.type}" data-value="${value}" data-cost="${calculatedCost}" data-method="dinheiro">Dinheiro</button>
+                        <button class="btn-payment btn-pix" data-id="${item.id}" data-type="${item.type}" data-value="${value}" data-cost="${calculatedCost}" data-method="pix">PIX</button>
+                        <button class="btn-payment btn-card" data-id="${item.id}" data-type="${item.type}" data-value="${value}" data-cost="${calculatedCost}" data-method="cartao">Cartão</button>
+                    </div>
+                `;
+                financeiroListDiv.appendChild(card);
+            });
+
+            financeiroListDiv.querySelectorAll('.btn-payment').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const type = e.target.dataset.type;
+                    const value = parseFloat(e.target.dataset.value);
+                    const cost = parseFloat(e.target.dataset.cost);
+                    const method = e.target.dataset.method;
+                    recordPayment(id, type, value, cost, method);
+                });
+            });
+        }
+
+        function recordPayment(id, type, value, cost, method) {
+            let itemIndex;
+            let targetArray;
+            let originalItem; // Para armazenar o objeto de venda ou OS original
+
+            if (type === 'os') {
+                targetArray = orders;
+            } else { // type === 'venda'
+                targetArray = sales;
+            }
+            itemIndex = targetArray.findIndex(item => item.id === id);
+
+            if (itemIndex > -1) {
+                originalItem = targetArray[itemIndex]; // Obtém o item original
+                originalItem.status = 'pago'; // Marca como pago na origem
+                originalItem.paymentMethod = method; // Adiciona método de pagamento
+
+                caixa[method] += value; // Adiciona ao saldo do caixa correspondente
+
+                let transactionDescription;
+                
+                if (type === 'os') {
+                    const osItem = originalItem; // Usa originalItem diretamente
+                    const serviceNames = osItem.services.map(s => s.name).join(', ');
+                    transactionDescription = `OS #${id} - ${serviceNames}`;
+                } else { // type === 'venda'
+                    transactionDescription = `Venda #${id}`;
+                }
+
+                const transaction = {
+                    id: Date.now(),
+                    sourceId: id,
+                    type: type,
+                    value: value,
+                    cost: cost, // Este 'cost' agora reflete corretamente o custo direto total para OS ou custo do produto para venda
+                    method: method,
+                    date: new Date().toLocaleDateString('pt-BR'), // Formata a data para pt-BR
+                    description: transactionDescription
+                };
+
+                // Adiciona a propriedade de itens somente se for uma 'venda'
+                if (type === 'venda') {
+                    transaction.items = originalItem.items; // Anexa o array de itens real da venda original
+                }
+
+                transactions.push(transaction); // Adiciona ao histórico de transações
+
+                saveData();
+                alert(`${type === 'os' ? 'OS' : 'Venda'} #${id} paga com sucesso via ${method.toUpperCase()}!`);
+                renderFinanceiroItems(); // Atualiza a lista
+                updateCaixaDisplay(); // Atualiza o display do caixa
+            }
+        }
+
+        // --- Funções da Página do Caixa ---
+        function updateDailyProfitDisplay() {
+            const todayDate = new Date().toLocaleDateString('pt-BR'); // Obtém a data de hoje no formato 'dd/mm/yyyy'
+
+            // Filtra transações (vendas e pagamentos de OS) de hoje
+            let todayRevenue = 0;
+            let todayCost = 0;
+            transactions.forEach(t => {
+                if (t.date === todayDate) {
+                    todayRevenue += t.value;
+                    todayCost += t.cost;
+                }
+            });
+
+            // Filtra despesas (saidaHistory) de hoje
+            let todayExpenses = 0;
+            saidaHistory.forEach(saida => {
+                if (saida.date === todayDate) {
+                    todayExpenses += saida.value;
+                }
+            });
+
+            const lucroDoDiaLiteral = todayRevenue - todayCost - todayExpenses;
+            document.getElementById('lucro-do-dia-display').textContent = `R$ ${lucroDoDiaLiteral.toFixed(2)}`;
+
+            console.log("--- Cálculo do Lucro do Dia ---");
+            console.log(`Data Atual: ${todayDate}`);
+            console.log(`Receita do Dia: R$ ${todayRevenue.toFixed(2)}`);
+            console.log(`Custo do Dia: R$ ${todayCost.toFixed(2)}`);
+            console.log(`Despesas do Dia: R$ ${todayExpenses.toFixed(2)}`);
+            console.log(`Lucro Líquido do Dia: R$ ${lucroDoDiaLiteral.toFixed(2)}`);
+            console.log("----------------------------");
+        }
+
+        function updateCaixaDisplay() {
+            const caixaDinheiroSpan = document.getElementById('caixa-dinheiro');
+            const caixaPixSpan = document.getElementById('caixa-pix');
+            const caixaCartaoSpan = document.getElementById('caixa-cartao');
+
+            caixaDinheiroSpan.textContent = `R$ ${caixa.dinheiro.toFixed(2)}`;
+            caixaPixSpan.textContent = `R$ ${caixa.pix.toFixed(2)}`;
+            caixaCartaoSpan.textContent = `R$ ${caixa.cartao.toFixed(2)}`;
+            updateDailyProfitDisplay(); // Chama a nova função aqui
+        }
+
+        function renderSaidaHistory() {
+            const saidaHistoryDiv = document.getElementById('saida-history');
+
+            saidaHistoryDiv.innerHTML = '';
+            if (saidaHistory.length === 0) {
+                saidaHistoryDiv.innerHTML = '<p>Nenhuma saída registrada.</p>';
+                return;
+            }
+            // Exibe as saídas mais recentes primeiro
+            saidaHistory.slice().reverse().forEach(saida => {
+                const card = document.createElement('div');
+                card.classList.add('cash-history-card');
+                card.innerHTML = `
+                    <p>Data: ${saida.date}</p>
+                    <p>Valor: R$ ${saida.value.toFixed(2)}</p>
+                    <p>Forma: ${saida.method.toUpperCase()}</p>
+                    <p>Descrição: ${saida.description}</p>
+                `;
+                saidaHistoryDiv.appendChild(card);
+            });
+        }
+
+        // NEW: Function to display the daily summary in a table
+        function updatePersistentDailyProfitMessage() {
+            const dailyProfitsTableContainer = document.getElementById('daily-profits-table-container');
+            dailyProfitsTableContainer.innerHTML = ''; // Clear previous content
+
+            if (dailyProfitsHistory.length === 0) {
+                dailyProfitsTableContainer.innerHTML = '<p>Nenhum lucro diário registrado ainda.</p>';
+                return;
+            }
+
+            // Sort dailyProfitsHistory by date in ascending order
+            const sortedDailyProfits = [...dailyProfitsHistory].sort((a, b) => {
+                const [dayA, monthA, yearA] = a.date.split('/').map(Number);
+                const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+                const dateA = new Date(yearA, monthA - 1, dayA);
+                const dateB = new Date(yearB, monthB - 1, dayB);
+                return dateA - dateB;
+            });
+
+            const table = document.createElement('table');
+            table.id = 'daily-profits-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Lucro do Dia</th>
+                        <th>Diferença do Dia Anterior</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            const tbody = table.querySelector('tbody');
+
+            for (let i = 0; i < sortedDailyProfits.length; i++) {
+                const currentRecord = sortedDailyProfits[i];
+                const row = document.createElement('tr');
+                let profitDifference = 0;
+                let differenceText = 'N/A';
+
+                if (i > 0) {
+                    const previousRecord = sortedDailyProfits[i - 1];
+                    profitDifference = currentRecord.profit - previousRecord.profit;
+                    differenceText = `R$ ${profitDifference.toFixed(2)}`;
+                    // Add color based on profit difference
+                    if (profitDifference > 0) {
+                        differenceText = `<span style="color: green;">${differenceText}</span>`;
+                    } else if (profitDifference < 0) {
+                        differenceText = `<span style="color: red;">${differenceText}</span>`;
+                    }
+                }
+
+                row.innerHTML = `
+                    <td>${currentRecord.date}</td>
+                    <td>R$ ${currentRecord.profit.toFixed(2)}</td>
+                    <td>${differenceText}</td>
+                `;
+                tbody.appendChild(row);
+            }
+            dailyProfitsTableContainer.appendChild(table);
+        }
+
+
+        // --- Funções da Página de Relatório Mensal ---
+        function renderMonthlyReport() {
+            const monthlyReportListDiv = document.getElementById('monthly-report-list');
+            const monthlyProfitDisplay = document.getElementById('monthly-profit-display');
+
+            monthlyReportListDiv.innerHTML = '';
+            let totalProfit = 0;
+
+            const currentMonthReportItems = [];
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            // Adiciona transações que foram pagas e estão no mês atual
+            transactions.forEach(t => {
+                const itemDateParts = t.date.split('/');
+                const itemMonth = parseInt(itemDateParts[1]) - 1; // O mês é baseado em 0
+                const itemYear = parseInt(itemDateParts[2]);
+                if (itemMonth === currentMonth && itemYear === currentYear) {
+                    currentMonthReportItems.push(t);
+                }
+            });
+
+            // Adiciona saídas (despesas) que estão no mês atual
+            saidaHistory.forEach(saida => {
+                const itemDateParts = saida.date.split('/');
+                const itemMonth = parseInt(itemDateParts[1]) - 1;
+                const itemYear = parseInt(itemDateParts[2]);
+                if (itemMonth === currentMonth && itemYear === currentYear) {
+                    currentMonthReportItems.push({
+                        id: Date.now() + Math.random(), // ID único para entrada de despesa no contexto do relatório
+                        type: 'expense',
+                        value: saida.value,
+                        cost: 0, // Sem custo direto para uma despesa como esta
+                        method: saida.method,
+                        date: saida.date,
+                        description: `Saída: ${saida.description}`
+                    });
+                }
+            });
+
+            if (currentMonthReportItems.length === 0) {
+                monthlyReportListDiv.innerHTML = '<p>Nenhum dado para o relatório mensal ainda.</p>';
+                monthlyProfitDisplay.textContent = 'R$ 0.00';
+                return;
+            }
+
+            // Ordena por data
+            currentMonthReportItems.sort((a, b) => {
+                const dateA = new Date(a.date.split('/').reverse().join('-'));
+                const dateB = new Date(b.date.split('/').reverse().join('-'));
+                return dateA - dateB;
+            });
+
+            currentMonthReportItems.forEach(item => {
+                let profit = 0;
+                if (item.type === 'venda' || item.type === 'os') {
+                    // Lucro/Perda para vendas e OS: Valor Recebido - Custo Direto (Valor Pago)
+                    profit = item.value - item.cost; 
+                } else if (item.type === 'expense') {
+                    // Saídas/Despesas: Reduzem o lucro total
+                    profit = -item.value;
+                }
+                totalProfit += profit;
+
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <h4>${item.type === 'os' ? 'OS' : item.type === 'venda' ? 'Venda' : 'Saída'} #${item.sourceId || item.id} - ${item.description || item.type}</h4>
+                    <p>Data: ${item.date}</p>
+                    ${item.type !== 'expense' ? `<p>Valor Recebido: R$ ${item.value.toFixed(2)} (${item.method.toUpperCase()})</p>` : `<p>Valor Saída: R$ ${item.value.toFixed(2)} (${item.method.toUpperCase()})</p>`}
+                    ${item.type !== 'expense' ? `<p>Custo: R$ ${item.cost.toFixed(2)}</p>` : ''}
+                    <p>Lucro/Perda do Item: R$ ${profit.toFixed(2)}</p>
+                `;
+                monthlyReportListDiv.appendChild(card);
+            });
+            monthlyProfitDisplay.textContent = `R$ ${totalProfit.toFixed(2)}`;
+        }
+
+        function generateDetailedMonthlyReport() {
+            try {
+                const monthlyDetailedReportDisplay = document.getElementById('monthly-detailed-report-display');
+                const detailedReportContent = document.getElementById('detailed-report-content');
+                
+                let totalSalesRevenue = 0;
+                let totalServiceRevenue = 0;
+                let totalProductCost = 0; // Custo de produtos vendidos
+                let totalServiceCost = 0; // Custo inerente dos serviços (valor pago ao cadastrar o serviço)
+                let totalServicePartCost = 0; // Custo de peças usadas em OS
+                let totalOperatingExpenses = 0; // Saídas gerais
+
+                // Resume itens para venda, serviços e despesas
+                const productsSummary = {}; // {name: {quantity: N, revenue: R}}
+                const servicesSummary = {}; // {name: {count: N, revenue: R}}
+                const expensesBreakdown = {}; // {description: {value: V}}
+
+                const today = new Date();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+                const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                const monthYearString = `${monthNames[currentMonth]} de ${currentYear}`;
+
+                // Cria uma nova lista de itens para o relatório detalhado com base nas transações e saídas atuais
+                const detailedReportItems = [];
+
+                transactions.forEach(t => {
+                    const itemDateParts = t.date.split('/');
+                    const itemMonth = parseInt(itemDateParts[1]) - 1;
+                    const itemYear = parseInt(itemDateParts[2]);
+                    if (itemMonth === currentMonth && itemYear === currentYear) {
+                        detailedReportItems.push(t);
+                    }
+                });
+
+                saidaHistory.forEach(saida => {
+                    const itemDateParts = saida.date.split('/');
+                    const itemMonth = parseInt(itemDateParts[1]) - 1;
+                    const itemYear = parseInt(itemDateParts[2]);
+                    if (itemMonth === currentMonth && itemYear === currentYear) {
+                        detailedReportItems.push({
+                            id: Date.now() + Math.random(), // ID único para entrada de despesa no contexto do relatório
+                            type: 'expense',
+                            value: saida.value,
+                            cost: 0,
+                            method: saida.method,
+                            date: saida.date,
+                            description: `Saída: ${saida.description}`
+                        });
+                    }
+                });
+
+
+                detailedReportItems.forEach(item => {
+                    if (item.type === 'venda') {
+                        totalSalesRevenue += item.value;
+                        totalProductCost += item.cost;
+                        // Garante que item.items exista e seja um array antes de iterar
+                        if (item.items && Array.isArray(item.items)) {
+                            item.items.forEach(product => { 
+                                const productName = `${product.name} (${product.color || 'N/A'})`;
+                                if (!productsSummary[productName]) {
+                                    productsSummary[productName] = { quantity: 0, revenue: 0 };
+                                }
+                                productsSummary[productName].quantity += (product.quantity || 0);
+                                productsSummary[productName].revenue += (product.value || 0) * (product.quantity || 0);
+                            });
+                        } else {
+                            console.warn(`[Report Warning] Transação de venda sem o array 'items' ou não é um array para o ID: ${item.id}.`);
+                        }
+                    } else if (item.type === 'os') {
+                        totalServiceRevenue += item.value;
+                        // Para OS, item.cost agora inclui custos de serviço e custos de peças
+                        totalServicePartCost += (item.valorPecaSubstituida || 0); // Custo das peças especificamente
+                        // Soma os custos individuais dos serviços do array de serviços da OS
+                        const originalOS = orders.find(o => o.id === item.sourceId);
+                        if (originalOS && originalOS.services && Array.isArray(originalOS.services)) {
+                            originalOS.services.forEach(service => {
+                                totalServiceCost += (service.cost || 0);
+                            });
+                        }
+
+                        // Resume os serviços prestados na OS
+                        if (originalOS && originalOS.services && Array.isArray(originalOS.services) && originalOS.services.length > 0) { 
+                             originalOS.services.forEach(service => {
+                                const serviceName = service.name;
+                                if (!servicesSummary[serviceName]) {
+                                    servicesSummary[serviceName] = { count: 0, revenue: 0 };
+                                }
+                                servicesSummary[serviceName].count++;
+                                servicesSummary[serviceName].revenue += (service.value || 0); // Receita deste serviço específico
+                            });
+                        } else {
+                            console.warn(`[Report Error] OS original ou serviços não encontrados ou vazios para transação de OS com sourceId: ${item.sourceId}.`);
+                            // Fallback se nenhum serviço for encontrado (não deveria acontecer se a OS foi criada corretamente)
+                            const serviceName = "Serviço Desconhecido/Inválido";
+                            if (!servicesSummary[serviceName]) {
+                                servicesSummary[serviceName] = { count: 0, revenue: 0 };
+                            }
+                            servicesSummary[serviceName].count++;
+                            servicesSummary[serviceName].revenue += (item.value || 0); // Usa o valor da transação como fallback
+                        }
+                    } else if (item.type === 'expense') {
+                        totalOperatingExpenses += item.value;
+                        const expenseDescription = item.description;
+                        if (!expensesBreakdown[expenseDescription]) {
+                            expensesBreakdown[expenseDescription] = { value: 0 };
+                        }
+                        expensesBreakdown[expenseDescription].value += (item.value || 0);
+                    }
+                });
+
+                const totalRevenue = totalSalesRevenue + totalServiceRevenue;
+                // Os custos diretos totais agora incluem custos de produtos, custos de serviços e custos de peças de serviço.
+                const totalDirectCosts = totalProductCost + totalServiceCost + totalServicePartCost; 
+                // O lucro líquido é o faturamento total menos todos os custos diretos e despesas operacionais.
+                const netProfit = totalRevenue - totalDirectCosts - totalOperatingExpenses;
+                const grossProfit = totalRevenue - totalDirectCosts; // Lucro Bruto (Faturamento - Custos Diretos)
+
+                // Calcula o número total de serviços para o ticket médio do mês atual
+                let totalActualServicesCount = 0; // Conta serviços individuais, não apenas OS
+                orders.filter(os => {
+                    if (os.status === 'pago' && os.finalizedDate) {
+                        const finalizedDateParts = os.finalizedDate.split('/');
+                        const finalizedMonth = parseInt(finalizedDateParts[1]) - 1;
+                        const finalizedYear = parseInt(finalizedDateParts[2]);
+                        return finalizedMonth === currentMonth && finalizedYear === currentYear;
+                    }
+                    return false;
+                }).forEach(os => {
+                    if (os.services && os.services.length > 0) {
+                        totalActualServicesCount += os.services.length; // Conta cada serviço dentro de uma OS
+                    }
+                });
+
+                const averageTicketPerService = totalActualServicesCount > 0 ? totalServiceRevenue / totalActualServicesCount : 0;
+
+
+                let reportContent = `
+                    <p><strong>Faturamento Total:</strong> R$ ${totalRevenue.toFixed(2)}</p>
+                    <p style="margin-left: 20px;">- Vendas de Produtos: R$ ${totalSalesRevenue.toFixed(2)}</p>
+                    <p style="margin-left: 20px;">- Serviços Realizados: R$ ${totalServiceRevenue.toFixed(2)}</p>
+                    <p><strong>Custo Direto Total:</strong> R$ ${totalDirectCosts.toFixed(2)}</p>
+                    <p style="margin-left: 20px;">- Custo de Produtos Vendidos (CMV): R$ ${totalProductCost.toFixed(2)}</p>
+                    <p style="margin-left: 20px;">- Custo dos Serviços (Valor Pago): R$ ${totalServiceCost.toFixed(2)}</p>
+                    <p><strong>Total de Saídas (Despesas Operacionais):</strong> R$ ${totalOperatingExpenses.toFixed(2)}</p>
+                    <p style="font-size: 1.2em; font-weight: bold; color: ${netProfit >= 0 ? '#28a745' : '#dc3545'};">
+                        Lucro Líquido do Mês: R$ ${netProfit.toFixed(2)}
+                    </p>
+                    <p><strong>Ticket Médio Mensal por Serviço:</strong> R$ ${averageTicketPerService.toFixed(2)}</p>
+
+                    <h3>Resumo de Produtos Vendidos:</h3>
+                    <div class="results-list">
+                `;
+                const sortedProducts = Object.keys(productsSummary).sort();
+                if (sortedProducts.length === 0) {
+                    reportContent += '<p>Nenhum produto vendido no mês.</p>';
+                } else {
+                    sortedProducts.forEach(productName => {
+                        const summary = productsSummary[productName];
+                        reportContent += `<p><strong>${productName}:</strong> ${summary.quantity} unidades - Faturamento: R$ ${summary.revenue.toFixed(2)}</p>`;
+                        });
+                    }
+                    reportContent += `</div><h3>Resumo de Serviços Realizados:</h3><div class="results-list">`;
+                    const sortedServices = Object.keys(servicesSummary).sort();
+                    if (sortedServices.length === 0) {
+                        reportContent += '<p>Nenhum serviço realizado no mês.</p>';
+                    } else {
+                        sortedServices.forEach(serviceName => {
+                            const summary = servicesSummary[serviceName];
+                            reportContent += `<p><strong>${serviceName}:</strong> ${summary.count} vezes - Faturamento: R$ ${summary.revenue.toFixed(2)}</p>`;
+                        });
+                    }
+                    reportContent += `</div><h3>Resumo de Saídas/Despesas:</h3><div class="results-list">`;
+                    const sortedExpenses = Object.keys(expensesBreakdown).sort();
+                    if (sortedExpenses.length === 0) {
+                        reportContent += '<p>Nenhuma saída registrada no mês.</p>';
+                    } else {
+                        sortedExpenses.forEach(expenseDesc => {
+                            const summary = expensesBreakdown[expenseDesc];
+                            reportContent += `<p><strong>${expenseDesc}:</strong> R$ ${summary.value.toFixed(2)}</p>`;
+                        });
+                    }
+                    reportContent += `</div>`;
+
+                    detailedReportContent.innerHTML = reportContent;
+                    monthlyDetailedReportDisplay.style.display = 'block'; // Mostra o relatório detalhado
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); // Rola para o relatório
+
+                // Gera PDF imediatamente sem esperar por gráficos
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFontSize(18);
+                doc.text('Relatório Detalhado Mensal', 105, 20, null, null, 'center');
+                doc.setFontSize(10);
+                doc.text(`Mês de ${monthYearString}`, 105, 27, null, null, 'center'); // Adiciona mês e ano
+
+                let yOffset = 35; // yOffset ajustado após adicionar mês/ano
+                doc.setFontSize(12);
+                const addText = (text, x = 10, y = yOffset) => {
+                    doc.text(text, x, y);
+                    yOffset += 7; // Altura da linha
+                };
+
+                addText(`Faturamento Total: R$ ${totalRevenue.toFixed(2)}`);
+                addText(`  - Vendas de Produtos: R$ ${totalSalesRevenue.toFixed(2)}`, 20);
+                addText(`  - Serviços Realizados: R$ ${totalServiceRevenue.toFixed(2)}`, 20);
+                addText(`Custo Direto Total: R$ ${totalDirectCosts.toFixed(2)}`);
+                addText(`  - Custo de Produtos Vendidos (CMV): R$ ${totalProductCost.toFixed(2)}`, 20);
+                addText(`  - Custo dos Serviços (Valor Pago): R$ ${totalServiceCost.toFixed(2)}`, 20);
+                addText(`  - Custo de Peças para Serviço: R$ ${totalServicePartCost.toFixed(2)}`, 20);
+                addText(`Total de Saídas (Despesas Operacionais): R$ ${totalOperatingExpenses.toFixed(2)}`);
+                addText(`Lucro Líquido do Mês: R$ ${netProfit.toFixed(2)}`);
+
+                yOffset += 10; // Espaço antes dos resumos
+
+                addText('Resumo de Produtos Vendidos:', 10, yOffset);
+                yOffset += 7;
+                if (sortedProducts.length === 0) {
+                    addText('Nenhum produto vendido no mês.', 20, yOffset);
+                    yOffset += 7;
+                } else {
+                    sortedProducts.forEach(productName => {
+                        const summary = productsSummary[productName];
+                        addText(`  ${productName}: ${summary.quantity} unidades - Faturamento: R$ ${summary.revenue.toFixed(2)}`, 20, yOffset);
+                        yOffset += 7;
+                    });
+                }
+
+                yOffset += 5; // Espaço
+                addText('Resumo de Serviços Realizados:', 10, yOffset);
+                yOffset += 7;
+                if (sortedServices.length === 0) {
+                    addText('Nenhum serviço realizado no mês.', 20, yOffset);
+                    yOffset += 7;
+                } else {
+                    sortedServices.forEach(serviceName => {
+                        const summary = servicesSummary[serviceName];
+                        addText(`  ${serviceName}: ${summary.count} vezes - Faturamento: R$ ${summary.revenue.toFixed(2)}`, 20, yOffset);
+                        yOffset += 7;
+                    });
+                }
+
+                yOffset += 5; // Espaço
+                addText('Resumo de Saídas/Despesas:', 10, yOffset);
+                yOffset += 7;
+                if (sortedExpenses.length === 0) {
+                    addText('Nenhuma saída registrada no mês.', 20, yOffset);
+                    yOffset += 7;
+                } else {
+                    sortedExpenses.forEach(expenseDesc => {
+                        const summary = expensesBreakdown[expenseDesc];
+                        addText(`  ${expenseDesc}: R$ ${summary.value.toFixed(2)}`, 20, yOffset);
+                        yOffset += 7;
+                    });
+                }
+                
+                // Adiciona os saldos atuais do caixa
+                yOffset += 10; // Espaço extra antes dos saldos do caixa
+                addText('Saldos Atuais do Caixa:', 10, yOffset);
+                yOffset += 7;
+                addText(`  Dinheiro: R$ ${caixa.dinheiro.toFixed(2)}`, 20);
+                addText(`  PIX: R$ ${caixa.pix.toFixed(2)}`, 20);
+                addText(`  Cartão: R$ ${caixa.cartao.toFixed(2)}`, 20);
+
+                doc.save('relatorio_mensal_detalhado.pdf');
+                alert('Relatório PDF gerado com sucesso!');
+
+            } catch (error) {
+                console.error("Erro ao gerar relatório detalhado mensal:", error);
+                alert("Ocorreu um erro ao gerar o relatório detalhado mensal. Verifique o console para mais detalhes.");
+                // Opcionalmente, oculta a exibição do relatório detalhado se um erro ocorreu durante a geração
+                document.getElementById('monthly-detailed-report-display').style.display = 'none';
+                document.getElementById('detailed-report-content').innerHTML = '';
+            }
+        }
+
+        // --- Funções da Página de Alerta ---
+        function renderOSAlerts() {
+            const osAlertListDiv = document.getElementById('os-alert-list');
+            osAlertListDiv.innerHTML = '';
+            const today = new Date();
+            // Normaliza a data de hoje para o início do dia para comparação
+            today.setHours(0, 0, 0, 0);
+
+            // Filtra ordens que têm entre 15 e 20 dias E estão pagas
+            const alerts = orders.filter(os => {
+                // Garante que a OS tenha uma finalizedDate (está paga)
+                if (os.status !== 'pago' || !os.finalizedDate) {
+                    return false;
+                }
+
+                // Analisa a string da data de finalização da OS (dd/mm/yyyy) para um objeto Date
+                const finalizedDateParts = os.finalizedDate.split('/');
+                const finalizedDate = new Date(parseInt(finalizedDateParts[2]), parseInt(finalizedDateParts[1]) - 1, parseInt(finalizedDateParts[0]));
+                finalizedDate.setHours(0, 0, 0, 0); // Normaliza para o início do dia para comparação precisa
+
+                // Calcula a diferença em dias a partir da data de finalização
+                const diffTime = Math.abs(today.getTime() - finalizedDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                return diffDays >= 15 && diffDays < 20; // Condição alterada: 15 dias ou mais E menos de 20 dias
+            });
+
+            if (alerts.length === 0) {
+                osAlertListDiv.innerHTML = '<p>Nenhuma Ordem de Serviço finalizada e paga em alerta no momento.</p>';
+                return;
+            }
+
+            alerts.forEach(os => {
+                const finalizedDateParts = os.finalizedDate.split('/');
+                const finalizedDate = new Date(parseInt(finalizedDateParts[2]), parseInt(finalizedDateParts[1]) - 1, parseInt(finalizedDateParts[0]));
+                finalizedDate.setHours(0, 0, 0, 0);
+
+                const diffTime = Math.abs(today.getTime() - finalizedDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                const card = document.createElement('div');
+                card.classList.add('os-card', 'alert-card'); // Adicionada a classe alert-card para estilo específico
+                card.innerHTML = `
+                    <h4>ALERTA: OS #${os.id} - ${diffDays} dias após finalização</h4>
+                    <p>Cliente: ${os.clienteNome}</p>
+                    <p>Serviço: ${os.services.map(s => s.name).join(', ')}</p>
+                    <p>Status: Paga</p>
+                    <p>Criada em: ${os.date}</p>
+                    <p>Finalizada/Paga em: ${os.finalizedDate}</p>
+                    <div class="actions">
+                        <button class="btn-primary" onclick="showPage('page-processo');">Visualizar OS</button>
+                    </div>
+                `;
+                osAlertListDiv.appendChild(card);
+            });
+        }
+
+        // --- Funções da Página de Garantia (Nova) ---
+        function renderWarrantyServices(listToRender = null) {
+            const warrantyOsListDiv = document.getElementById('warranty-os-list');
+            warrantyOsListDiv.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let eligibleOrders = orders.filter(os => {
+                if (os.status !== 'pago' || !os.finalizedDate) {
+                    return false;
+                }
+                const finalizedDateParts = os.finalizedDate.split('/');
+                const finalizedDate = new Date(parseInt(finalizedDateParts[2]), parseInt(finalizedDateParts[1]) - 1, parseInt(finalizedDateParts[0]));
+                finalizedDate.setHours(0, 0, 0, 0);
+
+                const diffTime = Math.abs(today.getTime() - finalizedDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                return diffDays <= 90; // Alterado para 90 dias
+            });
+
+            let displayList = listToRender === null ? eligibleOrders : listToRender;
+
+            if (displayList.length === 0) {
+                warrantyOsListDiv.innerHTML = '<p>Nenhuma Ordem de Serviço em garantia nos últimos 90 dias.</p>';
+                return;
+            }
+
+            displayList.forEach(os => {
+                const finalizedDateParts = os.finalizedDate.split('/');
+                const finalizedDate = new Date(parseInt(finalizedDateParts[2]), parseInt(finalizedDateParts[1]) - 1, parseInt(finalizedDateParts[0]));
+                finalizedDate.setHours(0, 0, 0, 0);
+
+                const diffTime = Math.abs(today.getTime() - finalizedDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                const card = document.createElement('div');
+                card.classList.add('os-card');
+                card.innerHTML = `
+                    <h4>OS #${os.id} - ${os.clienteNome} (${os.modeloAparelho})</h4>
+                    <p>Serviço: ${os.services.map(s => s.name).join(', ')}</p>
+                    <p>Finalizada/Paga em: ${os.finalizedDate} (${diffDays} dias atrás)</p>
+                    <p>Técnico: ${os.tecnicoResponsavel}</p>
+                    <div class="actions">
+                        <button class="btn-primary" onclick="showPage('page-processo');">Visualizar OS</button>
+                        <button class="btn-success" onclick="copyToClipboard('${os.clienteWhatsapp}')">Copiar WhatsApp</button>
+                    </div>
+                `;
+                warrantyOsListDiv.appendChild(card);
+            });
+        }
+
+
+        // --- Funções Modais para Edição de Serviços ---
+        function openEditServicesModal(osId) {
+            editingOSId = osId;
+            const os = orders.find(o => o.id === osId);
+            if (!os) {
+                alert('OS não encontrada para edição de serviços.');
+                return;
+            }
+
+            document.getElementById('modal-os-id').textContent = osId;
+            // Popula o campo de custo das peças ao abrir o modal
+            document.getElementById('modal-valor-peca-substituida').value = (os.valorPecaSubstituida || 0).toFixed(2);
+
+            renderSelectedServicesInModal();
+            renderAvailableServicesForModal(); // Renderiza todos os serviços inicialmente para adição
+
+            document.getElementById('editServicesModal').style.display = 'block';
+        }
+
+        function closeEditServicesModal() {
+            editingOSId = null;
+            document.getElementById('editServicesModal').style.display = 'none';
+        }
+
+        function renderSelectedServicesInModal() {
+            const modalServicesList = document.getElementById('modal-services-list');
+            modalServicesList.innerHTML = '';
+            const os = orders.find(o => o.id === editingOSId);
+
+            if (!os || !os.services || os.services.length === 0) {
+                modalServicesList.innerHTML = '<p>Nenhum serviço adicionado a esta OS ainda.</p>';
+                return;
+            }
+
+            os.services.forEach((service, index) => {
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <p>${service.name} (R$ ${service.value.toFixed(2)})</p>
+                    <button class="remove-service-from-os" data-index="${index}">Remover</button>
+                `;
+                modalServicesList.appendChild(card);
+            });
+
+            modalServicesList.querySelectorAll('.remove-service-from-os').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const serviceIndex = parseInt(e.target.dataset.index);
+                    removeServiceFromOS(serviceIndex);
+                });
+            });
+        }
+
+        function renderAvailableServicesForModal(searchTerm = '') {
+            const availableServicesModalList = document.getElementById('available-services-modal-list');
+            availableServicesModalList.innerHTML = '';
+            
+            const filteredServices = services.filter(s => 
+                s.category === 'servico' && 
+                s.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredServices.length === 0 && searchTerm !== '') {
+                availableServicesModalList.innerHTML = '<p>Nenhum serviço encontrado com este termo.</p>';
+                return;
+            }
+            if (filteredServices.length === 0 && searchTerm === '') {
+                availableServicesModalList.innerHTML = '<p>Nenhum serviço cadastrado.</p>';
+                return;
+            }
+
+            filteredServices.forEach(service => {
+                const card = document.createElement('div');
+                card.classList.add('item-card');
+                card.innerHTML = `
+                    <h4>${service.name}</h4>
+                    <p>Valor: R$ ${service.value.toFixed(2)}</p>
+                    <div class="actions">
+                        <button class="btn-success add-service-to-os" data-id="${service.id}" data-name="${service.name}" data-value="${service.value}" data-cost="${service.cost}">Adicionar</button>
+                    </div>
+                `;
+                availableServicesModalList.appendChild(card);
+            });
+
+            availableServicesModalList.querySelectorAll('.add-service-to-os').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const os = orders.find(o => o.id === editingOSId);
+                    if (os) {
+                        const newService = {
+                            id: parseInt(e.target.dataset.id),
+                            name: e.target.dataset.name,
+                            value: parseFloat(e.target.dataset.value) || 0,
+                            cost: parseFloat(e.target.dataset.cost) || 0 // Inclui o custo da definição do serviço
+                        };
+                        // Impede a adição do mesmo serviço várias vezes (opcional, ajuste conforme necessário)
+                        if (!os.services.some(s => s.id === newService.id)) {
+                            os.services.push(newService);
+                            renderSelectedServicesInModal();
+                        } else {
+                            alert('Este serviço já foi adicionado a esta OS.');
+                        }
+                    }
+                });
+            });
+        }
+
+        function removeServiceFromOS(serviceIndex) {
+            const os = orders.find(o => o.id === editingOSId);
+            if (os && os.services && os.services[serviceIndex]) {
+                os.services.splice(serviceIndex, 1);
+                renderSelectedServicesInModal();
+            }
+        }
+
+        function saveServicesEdit() {
+            const os = orders.find(o => o.id === editingOSId);
+            if (os) {
+                // Atualiza valorPecaSubstituida a partir da entrada do modal, garantindo que seja um número
+                os.valorPecaSubstituida = parseFloat(document.getElementById('modal-valor-peca-substituida').value) || 0;
+
+                updateValorFinalOS(os); // Recalcula o valor total da OS
+                saveData();
+                alert('Serviços e Custo de Peças da OS atualizados com sucesso!');
+                closeEditServicesModal();
+                renderProcessOrders(); // Re-renderiza a lista de processo para refletir as alterações
+            }
+        }
+
+
+        // updatePageContent movida para fora do DOMContentLoaded para acesso global
+        window.updatePageContent = function(pageId) {
+            // Obtém referências dentro do escopo desta função, pois agora estão declaradas em DOMContentLoaded
+            const monthlyDetailedReportDisplay = document.getElementById('monthly-detailed-report-display');
+            const detailedReportContent = document.getElementById('detailed-report-content');
+            const dailyProfitsTableContainer = document.getElementById('daily-profits-table-container');
+
+            // Oculta o relatório detalhado ao trocar de página
+            if (monthlyDetailedReportDisplay) { // Verifica se o elemento existe antes de acessar
+                monthlyDetailedReportDisplay.style.display = 'none';
+            }
+            if (detailedReportContent) { // Verifica se o elemento existe antes de acessar
+                detailedReportContent.innerHTML = '';
+            }
+            // Limpa a tabela de lucros diários ao trocar de página (a menos que seja a página do caixa)
+            if (dailyProfitsTableContainer && pageId !== 'page-caixa') {
+                dailyProfitsTableContainer.innerHTML = '';
+            }
+
+
+            switch (pageId) {
+                case 'page-vendas':
+                    renderProductSaleResults(products.filter(p => p.quantity > 0)); // Exibe todos os produtos disponíveis por padrão
+                    currentSaleCart = []; // Limpa o carrinho ao navegar para e da página de vendas
+                    renderCartItems();
+                    break;
+                case 'page-servicos':
+                    document.getElementById('search-service').value = ''; // Limpa a entrada de pesquisa de serviço
+                    renderAvailableServices(); // Renderiza todos os serviços inicialmente
+                    // Reseta o formulário da OS e a seleção do cliente
+                    document.getElementById('os-service-form').reset();
+                    document.getElementById('os-servico-escolhido').value = '';
+                    document.getElementById('os-servico-id-hidden').value = '';
+                    document.getElementById('os-servico-valor-hidden').value = '';
+                    document.getElementById('os-tecnico-responsavel').value = '';
+                    
+                    // Reseta os campos do cliente no formulário da OS
+                    document.getElementById('os-cliente-nome').value = '';
+                    document.getElementById('os-whatsapp').value = '';
+                    document.getElementById('os-endereco').value = '';
+                    document.getElementById('selected-os-client-display').textContent = 'Nenhum';
+                    document.getElementById('search-client-os').value = ''; // Limpa a entrada de pesquisa de cliente para OS
+                    renderClientsForOS(); // Renderiza todos os clientes para seleção
+                    break;
+                case 'page-clientes': // Nova: Página de Clientes
+                    renderClients();
+                    document.getElementById('cadastro-cliente-form').reset();
+                    document.getElementById('search-client').value = '';
+                    document.getElementById('edit-client-form').style.display = 'none';
+                    break;
+                case 'page-pesquisa':
+                    renderSearchResults([]); // Começa com resultados vazios
+                    document.getElementById('search-item').value = ''; // Limpa a entrada de pesquisa
+                    document.getElementById('edit-item-form').style.display = 'none'; // Oculta o formulário de edição
+                    break;
+                case 'page-cadastro':
+                    document.getElementById('cadastro-form').reset();
+                    document.getElementById('cadastro-category').value = ''; // Reseta a seleção
+                    // Reseta explicitamente o estado dos campos específicos do produto
+                    document.getElementById('product-specific-fields').style.display = 'none';
+                    document.getElementById('cadastro-quantity').required = false;
+                    document.getElementById('cadastro-color').required = false;
+                    break;
+                case 'page-processo':
+                    renderProcessOrders();
+                    break;
+                case 'page-financeiro':
+                    renderFinanceiroItems();
+                    break;
+                case 'page-caixa':
+                    updateCaixaDisplay();
+                    renderSaidaHistory();
+                    document.getElementById('saida-form').reset(); // Limpa o formulário de saída
+                    // Ao entrar na página do Caixa, exibe o *último resumo diário salvo* se existir
+                    updatePersistentDailyProfitMessage(); // NEW: Call the new function here
+                    break;
+                case 'page-relatorio-mensal':
+                    renderMonthlyReport();
+                    break;
+                case 'page-alerta':
+                    renderOSAlerts();
+                    break;
+                case 'page-garantia': // Nova: Página de Garantia
+                    document.getElementById('search-warranty-os').value = ''; // Limpa a entrada de pesquisa
+                    renderWarrantyServices();
+                    break;
+            }
+        }
+
+        // Torna showPage acessível globalmente para atributos onclick em HTML gerado dinamicamente
+        window.showPage = function(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            updatePageContent(pageId);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Obtém referências aos elementos dentro do escopo DOMContentLoaded
+            const searchProductSaleInput = document.getElementById('search-product-sale');
+            const btnSearchProductSale = document.getElementById('btn-search-product-sale');
+            const btnFinalizarVenda = document.getElementById('btn-finalizar-venda');
+            const searchServiceInput = document.getElementById('search-service');
+            const btnSearchService = document.getElementById('btn-search-service');
+            const osServiceForm = document.getElementById('os-service-form');
+            const osServicoEscolhidoInput = document.getElementById('os-servico-escolhido');
+            const osServicoIdHidden = document.getElementById('os-servico-id-hidden');
+            const osServicoValorHidden = document.getElementById('os-servico-valor-hidden');
+            const osTecnicoResponsavelInput = document.getElementById('os-tecnico-responsavel');
+            const searchClientOSInput = document.getElementById('search-client-os');
+            const btnSearchClientOS = document.getElementById('btn-search-client-os');
+            const osClienteNomeInput = document.getElementById('os-cliente-nome');
+            const osWhatsappInput = document.getElementById('os-whatsapp');
+            const osEnderecoInput = document.getElementById('os-endereco');
+            const selectedOSClientDisplay = document.getElementById('selected-os-client-display');
+            const cadastroClienteForm = document.getElementById('cadastro-cliente-form');
+            const searchClientInput = document.getElementById('search-client');
+            const btnSearchClient = document.getElementById('btn-search-client');
+            const editClientForm = document.getElementById('edit-client-form');
+            const editClientId = document.getElementById('edit-client-id');
+            const editClientName = document.getElementById('edit-client-name');
+            const editClientWhatsapp = document.getElementById('edit-client-whatsapp');
+            const editClientAddress = document.getElementById('edit-client-address');
+            const btnSaveClientEdit = document.getElementById('btn-save-client-edit');
+            const btnCancelClientEdit = document.getElementById('btn-cancel-client-edit');
+            const searchItemInput = document.getElementById('search-item');
+            const btnSearchItem = document.getElementById('btn-search-item');
+            const editItemForm = document.getElementById('edit-item-form');
+            const editItemId = document.getElementById('edit-item-id');
+            const editItemCategoryHidden = document.getElementById('edit-item-category-hidden');
+            const editItemName = document.getElementById('edit-item-name');
+            const editItemColor = document.getElementById('edit-item-color');
+            const editItemQuantity = document.getElementById('edit-item-quantity');
+            const editItemCost = document.getElementById('edit-item-cost');
+            const editItemValue = document.getElementById('edit-item-value');
+            const btnSaveEdit = document.getElementById('btn-save-edit');
+            const btnCancelEdit = document.getElementById('btn-cancel-edit');
+            const cadastroForm = document.getElementById('cadastro-form');
+            const cadastroCategorySelect = document.getElementById('cadastro-category');
+            const productSpecificFields = document.getElementById('product-specific-fields');
+            const saidaForm = document.getElementById('saida-form');
+            const btnFinalizarDia = document.getElementById('btn-finalizar-dia');
+            const monthlyProfitDisplay = document.getElementById('monthly-profit-display');
+            const btnFinalizarMes = document.getElementById('btn-finalizar-mes');
+            const btnGenerateDetailedReport = document.getElementById('btn-generate-detailed-report');
+            const monthlyDetailedReportDisplay = document.getElementById('monthly-detailed-report-display');
+            const detailedReportContent = document.getElementById('detailed-report-content');
+            const btnCloseDetailedReport = document.getElementById('btn-close-detailed-report');
+            const searchWarrantyOsInput = document.getElementById('search-warranty-os');
+            const btnSearchWarrantyOs = document.getElementById('btn-search-warranty-os');
+            const dailyProfitsTableContainer = document.getElementById('daily-profits-table-container');
+
+
+            // Elementos do Modal
+            const editServicesModal = document.getElementById('editServicesModal');
+            const closeEditServicesModalBtn = document.getElementById('closeEditServicesModal');
+            const searchServiceModalInput = document.getElementById('search-service-modal');
+            const btnSearchServiceModal = document.getElementById('btn-search-service-modal');
+            const btnSaveServicesEdit = document.getElementById('btn-save-services-edit');
+            const btnCancelServicesEdit = document.getElementById('btn-cancel-services-edit');
+            const modalValorPecaSubstituidaInput = document.getElementById('modal-valor-peca-substituida');
+
+
+            // Listeners de eventos para navegação
+            Object.keys(navLinks).forEach(navId => {
+                document.getElementById(navId).addEventListener('click', (e) => {
+                    e.preventDefault(); // Impede o comportamento padrão do link (recarregar a página)
+                    showPage(navLinks[navId]);
+                });
+            });
+
+            // --- Listeners de Eventos da Página de Vendas ---
+            btnSearchProductSale.addEventListener('click', () => {
+                const searchTerm = searchProductSaleInput.value.toLowerCase().trim();
+                const results = products.filter(p => p.name.toLowerCase().includes(searchTerm) && p.quantity > 0);
+                renderProductSaleResults(results);
+            });
+
+            btnFinalizarVenda.addEventListener('click', () => {
+                if (currentSaleCart.length === 0) {
+                    alert('Carrinho vazio. Adicione produtos para finalizar a venda.');
+                    return;
+                }
+
+                const saleValue = currentSaleCart.reduce((sum, item) => sum + (item.value * item.quantity), 0);
+                const saleCost = currentSaleCart.reduce((sum, item) => sum + (item.cost * item.quantity), 0);
+
+                const newSale = {
+                    id: Date.now(),
+                    type: 'venda',
+                    items: currentSaleCart,
+                    valorFinal: saleValue,
+                    valorPeca: saleCost, // Custo total dos produtos vendidos
+                    status: 'financeiro', // Aguardando pagamento
+                    date: new Date().toLocaleDateString('pt-BR')
+                };
+                sales.push(newSale);
+                currentSaleCart = []; // Limpa o carrinho
+                saveData();
+                console.log('Venda registrada e salva:', newSale); // Log de depuração
+                console.log('Array de vendas após finalizar e salvar:', sales); // Log de depuração
+                alert('Venda registrada e enviada para Financeiro!');
+                searchProductSaleInput.value = ''; // Limpa a entrada de pesquisa
+                showPage('page-financeiro');
+            });
+
+            // --- Listeners de Eventos da Página de Serviços ---
+            btnSearchService.addEventListener('click', () => {
+                const searchTerm = searchServiceInput.value.toLowerCase().trim();
+                const results = services.filter(s => s.category === 'servico' && s.name.toLowerCase().includes(searchTerm));
+                renderAvailableServices(results); // Passa os resultados filtrados para a função de renderização
+            });
+
+            btnSearchClientOS.addEventListener('click', () => {
+                const searchTerm = searchClientOSInput.value.toLowerCase().trim();
+                const results = clients.filter(client => client.name.toLowerCase().includes(searchTerm));
+                renderClientsForOS(results);
+            });
+
+            osServiceForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // Valida se um cliente foi selecionado
+                if (!osClienteNomeInput.value) {
+                    alert('Por favor, selecione um cliente para a Ordem de Serviço.');
+                    return;
+                }
+
+                if (!osServicoIdHidden.value) {
+                    alert('Por favor, selecione um serviço principal da lista.');
+                    return;
+                }
+                
+                // Encontra o serviço selecionado para obter seus detalhes completos, incluindo custo
+                const selectedService = services.find(s => s.id === parseInt(osServicoIdHidden.value));
+                if (!selectedService) {
+                    alert('Serviço principal selecionado não encontrado. Por favor, tente novamente.');
+                    return;
+                }
+
+                const newOS = {
+                    id: Date.now(),
+                    type: 'os',
+                    status: 'processo', // 'processo', 'financeiro', 'pago'
+                    clienteNome: osClienteNomeInput.value, // Obtém do cliente selecionado
+                    clienteWhatsapp: osWhatsappInput.value, // Obtém do cliente selecionado
+                    clienteEndereco: osEnderecoInput.value, // Obtém do cliente selecionado
+                    tecnicoResponsavel: document.getElementById('os-tecnico-responsavel').value, // Captura o técnico
+                    modeloAparelho: document.getElementById('os-modelo-aparelho').value,
+                    corAparelho: document.getElementById('os-cor-aparelho').value,
+                    defeitoRelatado: document.getElementById('os-defeito-relatado').value,
+                    
+                    // Agora, os.services é um array, armazena o serviço selecionado com seu custo
+                    services: [{ 
+                        id: selectedService.id,
+                        name: selectedService.name,
+                        value: selectedService.value,
+                        cost: selectedService.cost // Inclui o custo do próprio serviço
+                    }],
+                    pecasSubstituidas: '',
+                    relatorioDefeito: '',
+                    valorPecaSubstituida: 0, // Custo das peças na OS - inicializado em 0
+                    valorFinalOS: parseFloat(osServicoValorHidden.value) || 0, // Valor inicial do serviço
+                    date: new Date().toLocaleDateString('pt-BR'),
+                    finalizedDate: null // Novo campo para armazenar a data de finalização
+                };
+
+                orders.push(newOS);
+                saveData();
+                osServiceForm.reset();
+                osServicoEscolhidoInput.value = '';
+                osServicoIdHidden.value = '';
+                osServicoValorHidden.value = '';
+                osTecnicoResponsavelInput.value = ''; // Limpa o campo do técnico
+                // Reseta os campos e a exibição do cliente após a criação da OS
+                osClienteNomeInput.value = '';
+                osWhatsappInput.value = '';
+                osEnderecoInput.value = '';
+                selectedOSClientDisplay.textContent = 'Nenhum';
+                alert('Ordem de Serviço criada e enviada para Processo!');
+                showPage('page-processo');
+            });
+
+            // --- Listeners de Eventos da Página de Gerenciamento de Clientes ---
+            cadastroClienteForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('cliente-name').value.trim();
+                const whatsapp = document.getElementById('cliente-whatsapp').value.trim();
+                const address = document.getElementById('cliente-address').value.trim();
+
+                if (!name || !whatsapp || !address) {
+                    alert('Por favor, preencha todos os campos do cliente.');
+                    return;
+                }
+
+                const newClient = {
+                    id: Date.now(),
+                    name: name,
+                    whatsapp: whatsapp,
+                    address: address
+                };
+                clients.push(newClient);
+                saveData();
+                cadastroClienteForm.reset();
+                renderClients();
+                alert('Cliente cadastrado com sucesso!');
+            });
+
+            btnSearchClient.addEventListener('click', () => {
+                const searchTerm = searchClientInput.value.toLowerCase().trim();
+                const results = clients.filter(client => client.name.toLowerCase().includes(searchTerm));
+                renderClients(results);
+            });
+
+            btnCancelClientEdit.addEventListener('click', () => {
+                editClientForm.style.display = 'none';
+                editClientForm.reset();
+            });
+
+            btnSaveClientEdit.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = parseInt(editClientId.value);
+                const clientIndex = clients.findIndex(c => c.id === id);
+
+                if (clientIndex > -1) {
+                    clients[clientIndex].name = editClientName.value.trim();
+                    clients[clientIndex].whatsapp = editClientWhatsapp.value.trim();
+                    clients[clientIndex].address = editClientAddress.value.trim();
+                    saveData();
+                    alert('Cliente atualizado com sucesso!');
+                    editClientForm.style.display = 'none';
+                    renderClients(); // Re-renderiza a lista
+                }
+            });
+
+            // --- Listeners de Eventos da Página de Pesquisa ---
+            btnSearchItem.addEventListener('click', () => {
+                const searchTerm = searchItemInput.value.toLowerCase().trim();
+                const allItems = [...products, ...services];
+                const results = allItems.filter(item => item.name.toLowerCase().includes(searchTerm));
+                renderSearchResults(results);
+            });
+
+            btnCancelEdit.addEventListener('click', () => {
+                editItemForm.style.display = 'none';
+                editItemForm.reset();
+                document.querySelectorAll('.product-field').forEach(el => el.style.display = 'none');
+            });
+
+            editItemForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = parseInt(editItemId.value);
+                const category = editItemCategoryHidden.value;
+                let itemIndex;
+                let targetArray;
+
+                if (category === 'produto') {
+                    targetArray = products;
+                } else {
+                    targetArray = services;
+                }
+                itemIndex = targetArray.findIndex(item => item.id === id);
+
+                if (itemIndex > -1) {
+                    targetArray[itemIndex].name = editItemName.value;
+                    targetArray[itemIndex].cost = parseFloat(editItemCost.value) || 0; // Garante que seja um número
+                    targetArray[itemIndex].value = parseFloat(editItemValue.value) || 0; // Garante que seja um número
+                    if (category === 'produto') {
+                        targetArray[itemIndex].color = editItemColor.value;
+                        targetArray[itemIndex].quantity = parseInt(editItemQuantity.value) || 0; // Garante que seja um número
+                    }
+                    saveData();
+                    alert('Item atualizado com sucesso!');
+                    editItemForm.style.display = 'none';
+                    // Re-renderiza os resultados da pesquisa para mostrar o estoque atualizado
+                    const currentSearchTerm = searchItemInput.value.toLowerCase().trim();
+                    const allItems = [...products, ...services];
+                    const filteredItems = allItems.filter(item => item.name.toLowerCase().includes(currentSearchTerm));
+                    renderSearchResults(filteredItems);
+                }
+            });
+
+            // --- Listeners de Eventos da Página de Cadastro ---
+            cadastroCategorySelect.addEventListener('change', () => {
+                // Limpa e reseta os campos de quantidade/cor quando a categoria muda
+                document.getElementById('cadastro-quantity').value = '';
+                document.getElementById('cadastro-color').value = '';
+
+                if (cadastroCategorySelect.value === 'produto') {
+                    productSpecificFields.style.display = 'block';
+                    document.getElementById('cadastro-quantity').required = true;
+                    document.getElementById('cadastro-color').required = true;
+                } else {
+                    productSpecificFields.style.display = 'none';
+                    document.getElementById('cadastro-quantity').required = false;
+                    document.getElementById('cadastro-color').required = false;
+                }
+            });
+
+            cadastroForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('cadastro-name').value.trim();
+                const category = cadastroCategorySelect.value;
+                const cost = parseFloat(document.getElementById('cadastro-cost').value) || 0; // Garante que seja um número
+                const value = parseFloat(document.getElementById('cadastro-value').value) || 0; // Garante que seja um número
+
+                if (!name || isNaN(cost) || isNaN(value)) { // Mantém a verificação isNaN para erro explícito, mas fallback para 0 na atribuição
+                    alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+                    return;
+                }
+
+                const newItem = {
+                    id: Date.now(),
+                    name: name,
+                    category: category,
+                    cost: cost,
+                    value: value
+                };
+
+                if (category === 'produto') {
+                    const quantity = parseInt(document.getElementById('cadastro-quantity').value) || 0; // Garante que seja um número
+                    const color = document.getElementById('cadastro-color').value.trim();
+                    if (isNaN(quantity) || quantity < 0) {
+                        alert('Quantidade para produto deve ser um número válido e não negativo.');
+                        return;
+                    }
+                    newItem.quantity = quantity;
+                    newItem.color = color;
+                    products.push(newItem);
+                } else {
+                    services.push(newItem);
+                }
+
+                saveData();
+                cadastroForm.reset();
+                // Reseta explicitamente o estado dos campos específicos do produto após o envio
+                document.getElementById('cadastro-category').value = '';
+                productSpecificFields.style.display = 'none';
+                document.getElementById('cadastro-quantity').required = false;
+                document.getElementById('cadastro-color').required = false;
+                alert(`${name} cadastrado com sucesso na categoria ${category}!`);
+            });
+
+            // --- Listeners de Eventos da Página do Caixa ---
+            saidaForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const valorSaida = parseFloat(document.getElementById('saida-valor').value) || 0; // Garante que seja um número
+                const origemSaida = document.getElementById('saida-origem').value;
+                const descricaoSaida = document.getElementById('saida-descricao').value.trim();
+
+                if (isNaN(valorSaida) || valorSaida <= 0) {
+                    alert('Por favor, insira um valor de saída válido.');
+                    return;
+                }
+                if (!descricaoSaida) {
+                    alert('Por favor, insira uma descrição para a saída.');
+                    return;
+                }
+
+                if (caixa[origemSaida] < valorSaida) {
+                    alert(`Saldo insuficiente em ${origemSaida.toUpperCase()} para esta saída.`);
+                    return;
+                }
+
+                caixa[origemSaida] -= valorSaida;
+                const newSaida = {
+                    id: Date.now(),
+                    value: valorSaida,
+                    method: origemSaida,
+                    description: descricaoSaida,
+                    date: new Date().toLocaleDateString('pt-BR')
+                };
+                saidaHistory.push(newSaida);
+                saveData();
+                updateCaixaDisplay(); // Isso agora chamará updateDailyProfitDisplay
+                renderSaidaHistory();
+                saidaForm.reset();
+                alert('Saída registrada com sucesso!');
+            });
+
+            btnFinalizarDia.addEventListener('click', () => {
+                // O cálculo do lucro do dia atual permanece o mesmo
+                const todayDate = new Date().toLocaleDateString('pt-BR');
+                let currentDayRevenue = 0;
+                let currentDayCost = 0;
+                transactions.forEach(t => {
+                    if (t.date === todayDate) {
+                        currentDayRevenue += t.value;
+                        currentDayCost += t.cost;
+                    }
+                });
+                let currentDayExpenses = 0;
+                saidaHistory.forEach(saida => {
+                    if (saida.date === todayDate) {
+                        currentDayExpenses += saida.value;
+                    }
+                });
+                const currentDayProfit = currentDayRevenue - currentDayCost - currentDayExpenses;
+
+                // Armazena este resumo diário específico no histórico
+                const existingEntryIndex = dailyProfitsHistory.findIndex(entry => entry.date === todayDate);
+                if (existingEntryIndex !== -1) {
+                    dailyProfitsHistory[existingEntryIndex].profit = currentDayProfit;
+                } else {
+                    dailyProfitsHistory.push({ date: todayDate, profit: currentDayProfit });
+                }
+                
+                saveData(); // Salva o dailyProfitsHistory atualizado no localStorage
+
+                // Exibe este resumo específico através da nova função (tabela)
+                updatePersistentDailyProfitMessage();
+
+                alert('Dia finalizado! O lucro do dia foi registrado e permanece visível.');
+                // IMPORTANTE: transações e saidaHistory NÃO são limpos aqui.
+                // Eles devem se acumular para o relatório mensal.
+            });
+
+            // --- Listeners de Eventos da Página de Relatório Mensal ---
+            btnGenerateDetailedReport.addEventListener('click', () => {
+                generateDetailedMonthlyReport();
+            });
+
+            // Listener de evento para fechar o relatório detalhado. Agora seguro porque btnCloseDetailedReport é definido em DOMContentLoaded
+            btnCloseDetailedReport.addEventListener('click', () => {
+                monthlyDetailedReportDisplay.style.display = 'none';
+                detailedReportContent.innerHTML = '';
+            });
+
+            btnFinalizarMes.addEventListener('click', () => {
+                const currentMonthProfit = parseFloat(monthlyProfitDisplay.textContent.replace('R$ ', '').replace(',', '.'));
+
+                const confirmReset = confirm(`Deseja finalizar o mês? O lucro total deste mês foi de R$ ${currentMonthProfit.toFixed(2)}.\n\nTodos os dados do relatório mensal e transações serão zerados e será solicitado um novo saldo inicial para o caixa.`);
+
+                if (confirmReset) {
+                    let initialMoney = parseFloat(prompt('Digite o valor inicial para o CAIXA DINHEIRO do próximo mês:', '0') || '0');
+                    let initialPix = parseFloat(prompt('Digite o valor inicial para o CAIXA PIX do próximo mês:', '0') || '0');
+                    let initialCard = parseFloat(prompt('Digite o valor inicial para o CAIXA CARTÃO do próximo mês:', '0') || '0');
+
+                    if (isNaN(initialMoney) || initialMoney < 0) initialMoney = 0;
+                    if (isNaN(initialPix) || initialPix < 0) initialPix = 0;
+                    if (isNaN(initialCard) || initialCard < 0) initialCard = 0;
+
+                    caixa.dinheiro = initialMoney;
+                    caixa.pix = initialPix;
+                    caixa.cartao = initialCard;
+
+                    // Limpa todos os registros financeiros para o próximo mês
+                    transactions = [];
+                    saidaHistory = [];
+                    dailyProfitsHistory = []; // NEW: Limpa o histórico de lucros diários
+                    saveData(); // Salva as alterações
+                    alert('Mês finalizado! Saldo do caixa inicializado para o próximo mês.');
+                    showPage('page-caixa'); // Vai para a página do caixa para ver os novos valores
+                }
+            });
+
+            // --- Listeners de Eventos da Página de Garantia ---
+            btnSearchWarrantyOs.addEventListener('click', () => {
+                const searchTerm = searchWarrantyOsInput.value.toLowerCase().trim();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const eligibleOrdersForSearch = orders.filter(os => {
+                    if (os.status !== 'pago' || !os.finalizedDate) {
+                        return false;
+                    }
+                    const finalizedDateParts = os.finalizedDate.split('/');
+                    const finalizedDate = new Date(parseInt(finalizedDateParts[2]), parseInt(finalizedDateParts[1]) - 1, parseInt(finalizedDateParts[0]));
+                    finalizedDate.setHours(0, 0, 0, 0);
+
+                    const diffTime = Math.abs(today.getTime() - finalizedDate.getTime());
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    return diffDays <= 90; // Alterado para 90 dias
+                });
+
+                const results = eligibleOrdersForSearch.filter(os => 
+                    os.clienteNome.toLowerCase().includes(searchTerm) ||
+                    os.services.some(s => s.name.toLowerCase().includes(searchTerm)) || // Verifica em múltiplos serviços
+                    os.modeloAparelho.toLowerCase().includes(searchTerm) ||
+                    os.tecnicoResponsavel.toLowerCase().includes(searchTerm) ||
+                    os.id.toString().includes(searchTerm)
+                );
+                renderWarrantyServices(results);
+            });
+
+            // --- Listeners de Eventos do Modal ---
+            closeEditServicesModalBtn.addEventListener('click', closeEditServicesModal);
+            btnCancelServicesEdit.addEventListener('click', closeEditServicesModal);
+            btnSaveServicesEdit.addEventListener('click', saveServicesEdit);
+
+            searchServiceModalInput.addEventListener('input', () => {
+                const searchTerm = searchServiceModalInput.value.toLowerCase().trim();
+                renderAvailableServicesForModal(searchTerm);
+            });
+            btnSearchServiceModal.addEventListener('click', () => {
+                const searchTerm = searchServiceModalInput.value.toLowerCase().trim();
+                renderAvailableServicesForModal(searchTerm);
+            });
+
+
+            // --- Inicialização ---
+            loadData(); // Carrega os dados salvos
+            showPage('page-vendas'); // Inicia na página de Vendas
+        });
+    </script>
+</body>
+</html>
