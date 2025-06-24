@@ -2863,40 +2863,70 @@
             });
 
             btnFinalizarDia.addEventListener('click', () => {
-                // O cálculo do lucro do dia atual permanece o mesmo
-                const todayDate = new Date().toLocaleDateString('pt-BR');
-                let currentDayRevenue = 0;
-                let currentDayCost = 0;
-                transactions.forEach(t => {
-                    if (t.date === todayDate) {
-                        currentDayRevenue += t.value;
-                        currentDayCost += t.cost;
-                    }
-                });
-                let currentDayExpenses = 0;
-                saidaHistory.forEach(saida => {
-                    if (saida.date === todayDate) {
-                        currentDayExpenses += saida.value;
-                    }
-                });
-                const currentDayProfit = currentDayRevenue - currentDayCost - currentDayExpenses;
+                // 1. Encontra todas as datas únicas com transações pendentes
+                // Usamos um Set para garantir que cada data seja processada apenas uma vez
+                const uniqueTransactionDates = [...new Set(transactions.map(t => t.date))];
 
-                // Armazena este resumo diário específico no histórico
-                const existingEntryIndex = dailyProfitsHistory.findIndex(entry => entry.date === todayDate);
-                if (existingEntryIndex !== -1) {
-                    dailyProfitsHistory[existingEntryIndex].profit = currentDayProfit;
-                } else {
-                    dailyProfitsHistory.push({ date: todayDate, profit: currentDayProfit });
+                if (uniqueTransactionDates.length === 0) {
+                    alert('Não há transações para finalizar no momento.');
+                    return; // Sai da função se não houver transações
                 }
+
+                // 2. Processa cada dia com transações pendentes
+                uniqueTransactionDates.forEach(dateToFinalize => {
+                    let dayRevenue = 0;
+                    let dayCost = 0;
+
+                    // Soma as receitas e custos para a data específica
+                    transactions.forEach(t => {
+                        if (t.date === dateToFinalize) {
+                            dayRevenue += t.value;
+                            dayCost += t.cost;
+                        }
+                    });
+
+                    const dayProfit = dayRevenue - dayCost;
+
+                    // Salva ou atualiza o lucro do dia no histórico
+                    const existingDailyProfitIndex = dailyProfitsHistory.findIndex(dp => dp.date === dateToFinalize);
+
+                    if (existingDailyProfitIndex !== -1) {
+                        // Se o lucro para esta data já existe, atualiza-o
+                        dailyProfitsHistory[existingDailyProfitIndex] = {
+                            date: dateToFinalize,
+                            revenue: dayRevenue,
+                            cost: dayCost,
+                            profit: dayProfit
+                        };
+                    } else {
+                        // Se não existe, adiciona como um novo registro
+                        dailyProfitsHistory.push({
+                            date: dateToFinalize,
+                            revenue: dayRevenue,
+                            cost: dayCost,
+                            profit: dayProfit
+                        });
+                    }
+                });
+
+                // 3. Após processar todas as datas pendentes, ZERA o array de transações
+                transactions = []; // Limpa todas as transações para começar um novo período/dia
+
+                saveData(); // Salva o histórico atualizado e as transações agora vazias
+
+                // Opcional: Limpar o caixa (se você quiser que o caixa também zere com a finalização do dia)
+                // Se o caixa representa o dinheiro *em mãos* naquele momento, ele NÃO deve ser zerado aqui.
+                // Se ele representa o *saldo inicial do dia*, talvez sim. Depende da sua lógica de negócio.
+                // caixa.dinheiro = 0;
+                // caixa.pix = 0;
+                // caixa.cartao = 0;
+                // saveData(); 
+
+                // 4. Atualiza o dashboard, que agora mostrará 0 para o dia atual (pois transactions está vazio)
+                updateDashboard(); 
+                updateCaixaDisplay(); 
                 
-                saveData(); // Salva o dailyProfitsHistory atualizado no localStorage
-
-                // Exibe este resumo específico através da nova função (tabela)
-                updatePersistentDailyProfitMessage();
-
-                alert('Dia finalizado! O lucro do dia foi registrado e permanece visível.');
-                // IMPORTANTE: transações e saidaHistory NÃO são limpos aqui.
-                // Eles devem se acumular para o relatório mensal.
+                alert('Dia(s) finalizado(s) com sucesso! Lucros salvos e transações diárias zeradas.');
             });
 
             // --- Listeners de Eventos da Página de Relatório Mensal ---
