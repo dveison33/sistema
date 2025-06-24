@@ -972,7 +972,7 @@
     <!-- jsPDF CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <script>
+     <script>
         // --- System Data (Simulated with localStorage) ---
         let products = []; // Armazena produtos (com quantidade)
         let services = []; // Armazena serviços
@@ -2862,72 +2862,7 @@
                 alert('Saída registrada com sucesso!');
             });
 
-            btnFinalizarDia.addEventListener('click', () => {
-                // 1. Encontra todas as datas únicas com transações pendentes
-                // Usamos um Set para garantir que cada data seja processada apenas uma vez
-                const uniqueTransactionDates = [...new Set(transactions.map(t => t.date))];
-
-                if (uniqueTransactionDates.length === 0) {
-                    alert('Não há transações para finalizar no momento.');
-                    return; // Sai da função se não houver transações
-                }
-
-                // 2. Processa cada dia com transações pendentes
-                uniqueTransactionDates.forEach(dateToFinalize => {
-                    let dayRevenue = 0;
-                    let dayCost = 0;
-
-                    // Soma as receitas e custos para a data específica
-                    transactions.forEach(t => {
-                        if (t.date === dateToFinalize) {
-                            dayRevenue += t.value;
-                            dayCost += t.cost;
-                        }
-                    });
-
-                    const dayProfit = dayRevenue - dayCost;
-
-                    // Salva ou atualiza o lucro do dia no histórico
-                    const existingDailyProfitIndex = dailyProfitsHistory.findIndex(dp => dp.date === dateToFinalize);
-
-                    if (existingDailyProfitIndex !== -1) {
-                        // Se o lucro para esta data já existe, atualiza-o
-                        dailyProfitsHistory[existingDailyProfitIndex] = {
-                            date: dateToFinalize,
-                            revenue: dayRevenue,
-                            cost: dayCost,
-                            profit: dayProfit
-                        };
-                    } else {
-                        // Se não existe, adiciona como um novo registro
-                        dailyProfitsHistory.push({
-                            date: dateToFinalize,
-                            revenue: dayRevenue,
-                            cost: dayCost,
-                            profit: dayProfit
-                        });
-                    }
-                });
-
-                // 3. Após processar todas as datas pendentes, ZERA o array de transações
-                transactions = []; // Limpa todas as transações para começar um novo período/dia
-
-                saveData(); // Salva o histórico atualizado e as transações agora vazias
-
-                // Opcional: Limpar o caixa (se você quiser que o caixa também zere com a finalização do dia)
-                // Se o caixa representa o dinheiro *em mãos* naquele momento, ele NÃO deve ser zerado aqui.
-                // Se ele representa o *saldo inicial do dia*, talvez sim. Depende da sua lógica de negócio.
-                // caixa.dinheiro = 0;
-                // caixa.pix = 0;
-                // caixa.cartao = 0;
-                // saveData(); 
-
-                // 4. Atualiza o dashboard, que agora mostrará 0 para o dia atual (pois transactions está vazio)
-                updateDashboard(); 
-                updateCaixaDisplay(); 
-                
-                alert('Dia(s) finalizado(s) com sucesso! Lucros salvos e transações diárias zeradas.');
-            });
+            
 
             // --- Listeners de Eventos da Página de Relatório Mensal ---
             btnGenerateDetailedReport.addEventListener('click', () => {
