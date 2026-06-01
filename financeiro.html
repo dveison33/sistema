@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinançasPessoais - Controle de Entradas e Saídas</title>
+    <!-- Tailwind CSS para um visual moderno e responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome para ícones elegantes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para relatórios visuais e gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <!-- Barra de Navegação -->
+    <nav class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white p-2 rounded-lg text-indigo-600 shadow-inner">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight">Finanças<span class="text-indigo-200">Local</span></span>
+                </div>
+                <div class="text-sm bg-indigo-700 px-3 py-1.5 rounded-full flex items-center space-x-2">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Banco de Dados Local Ativo</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Seletor de Mês/Ano e Resumo Geral -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Painel de Controle</h1>
+                    <p class="text-slate-500 text-sm">Gerencie suas finanças em tempo real</p>
+                </div>
+                <!-- Filtro de Mês -->
+                <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <button onclick="alterarMes(-1)" class="p-2 hover:bg-white rounded-lg transition-colors text-slate-600 hover:text-indigo-600">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <input type="month" id="filtro-mes" onchange="atualizarInterface()" class="bg-transparent border-none font-semibold text-slate-700 text-center focus:ring-0 cursor-pointer">
+                    <button onclick="alterarMes(1)" class="p-2 hover:bg-white rounded-lg transition-colors text-slate-600 hover:text-indigo-600">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card Entradas -->
+                <div class="bg-emerald-50 rounded-xl p-5 border border-emerald-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wider block mb-1">Total de Entradas</span>
+                        <span class="text-2xl font-bold text-emerald-800" id="resumo-entradas">R$ 0,00</span>
+                    </div>
+                    <div class="bg-emerald-500 text-white p-3 rounded-xl shadow-lg shadow-emerald-200">
+                        <i class="fa-solid fa-arrow-trend-up text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Card Saídas -->
+                <div class="bg-rose-50 rounded-xl p-5 border border-rose-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider block mb-1">Total de Saídas</span>
+                        <span class="text-2xl font-bold text-rose-800" id="resumo-saidas">R$ 0,00</span>
+                    </div>
+                    <div class="bg-rose-500 text-white p-3 rounded-xl shadow-lg shadow-rose-200">
+                        <i class="fa-solid fa-arrow-trend-down text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Card Saldo Final -->
+                <div id="card-saldo" class="bg-blue-50 rounded-xl p-5 border border-blue-100 flex items-center justify-between transition-colors duration-300">
+                    <div>
+                        <span class="text-xs font-semibold text-blue-700 uppercase tracking-wider block mb-1" id="label-saldo">Saldo do Mês</span>
+                        <span class="text-2xl font-bold text-blue-800" id="resumo-saldo">R$ 0,00</span>
+                        <span id="status-saldo" class="text-xs block mt-1 font-medium"></span>
+                    </div>
+                    <div id="icon-saldo-container" class="bg-blue-500 text-white p-3 rounded-xl shadow-lg shadow-blue-200">
+                        <i id="icon-saldo" class="fa-solid fa-scale-balanced text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout em Duas Colunas: Formulários e Relatório/Lista -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Coluna da Esquerda: Formulários de Cadastro (4 Colunas) -->
+            <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Formulário de Entrada (Ganhos) -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center space-x-2 pb-4 mb-4 border-b border-slate-100">
+                        <span class="text-emerald-500"><i class="fa-solid fa-circle-plus text-lg"></i></span>
+                        <h2 class="font-bold text-slate-900 text-lg">Novo Ganho (Entrada)</h2>
+                    </div>
+                    
+                    <form id="form-ganho" onsubmit="salvarGanho(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome / Descrição</label>
+                            <input type="text" id="ganho-nome" required placeholder="Ex: Salário, Freela, Pix recebido..." 
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Valor (R$)</label>
+                            <input type="number" step="0.01" min="0.01" id="ganho-valor" required placeholder="0,00" 
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm font-semibold">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm shadow-md shadow-emerald-100 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Adicionar Ganho</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Formulário de Saída (Gastos) -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center space-x-2 pb-4 mb-4 border-b border-slate-100">
+                        <span class="text-rose-500"><i class="fa-solid fa-circle-minus text-lg"></i></span>
+                        <h2 class="font-bold text-slate-900 text-lg">Novo Gasto (Saída)</h2>
+                    </div>
+                    
+                    <form id="form-gasto" onsubmit="salvarGasto(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome / Descrição</label>
+                            <input type="text" id="gasto-nome" required placeholder="Ex: Mercado, Aluguel, Posto..." 
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Dia</label>
+                                <input type="number" id="gasto-dia" required min="1" max="31" placeholder="1 a 31" 
+                                       class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Valor (R$)</label>
+                                <input type="number" step="0.01" min="0.01" id="gasto-valor" required placeholder="0,00" 
+                                       class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm font-semibold">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Categoria</label>
+                            <select id="gasto-categoria" required 
+                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm text-slate-600 bg-white">
+                                <option value="" disabled selected>Escolha uma categoria</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Lazer/Entretenimento">Lazer / Entretenimento</option>
+                                <option value="Assinaturas">Assinaturas</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm shadow-md shadow-rose-100 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Adicionar Gasto</span>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Coluna da Direita: Relatório, Gráficos e Transações (8 Colunas) -->
+            <div class="lg:col-span-8 space-y-6">
+
+                <!-- Alerta Flutuante / Mensagens (Customizadas ao invés de alert) -->
+                <div id="custom-alert" class="hidden transform translate-y-2 opacity-0 transition-all duration-300 bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center justify-between">
+                    <span id="alert-text">Item adicionado com sucesso!</span>
+                    <button onclick="fecharAlerta()" class="text-white hover:text-slate-200 focus:outline-none">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Secção de Gráficos e Estatísticas (Lado a Lado no Desktop) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Gráfico de Gastos por Categoria -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                            <h2 class="font-bold text-slate-900 text-base flex items-center space-x-2">
+                                <span><i class="fa-solid fa-chart-pie text-indigo-500"></i></span>
+                                <span>Gastos por Categoria</span>
+                            </h2>
+                        </div>
+                        <div class="relative h-64 flex items-center justify-center">
+                            <canvas id="categoryChart"></canvas>
+                            <div id="no-chart-data" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90">
+                                <i class="fa-solid fa-chart-area text-4xl text-slate-300 mb-2"></i>
+                                <p class="text-slate-400 text-sm">Nenhum gasto este mês.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOVO: Gráfico de Comparação de Meses -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                            <h2 class="font-bold text-slate-900 text-base flex items-center space-x-2">
+                                <span><i class="fa-solid fa-chart-bar text-indigo-500"></i></span>
+                                <span>Comparativo entre Meses</span>
+                            </h2>
+                        </div>
+                        <div class="relative h-64 flex items-center justify-center">
+                            <canvas id="comparisonChart"></canvas>
+                            <div id="no-comparison-data" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90">
+                                <i class="fa-solid fa-layer-group text-4xl text-slate-300 mb-2"></i>
+                                <p class="text-slate-400 text-sm">Insira dados em outros meses para comparar.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- NOVO: Tabela Comparativa de Evolução de Saldo -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="pb-4 mb-4 border-b border-slate-100">
+                        <h2 class="font-bold text-slate-900 text-lg flex items-center space-x-2">
+                            <span><i class="fa-solid fa-arrow-up-right-dots text-indigo-500"></i></span>
+                            <span>Histórico e Evolução Mensal</span>
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-1">Comparação detalhada do desempenho financeiro dos meses registados</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
+                                    <th class="py-3 px-4">Mês/Ano</th>
+                                    <th class="py-3 px-4 text-right">Total Entradas</th>
+                                    <th class="py-3 px-4 text-right">Total Saídas</th>
+                                    <th class="py-3 px-4 text-right">Saldo Final</th>
+                                    <th class="py-3 px-4 text-center">Desempenho</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-comparacao-meses" class="divide-y divide-slate-100 text-sm">
+                                <!-- Preenchido dinamicamente com JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Lista de Transações e Lançamentos do Mês -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
+                        <h2 class="font-bold text-slate-900 text-lg flex items-center space-x-2">
+                            <span><i class="fa-solid fa-list text-indigo-500"></i></span>
+                            <span>Extrato Detalhado</span>
+                        </h2>
+                        <!-- Busca rápida -->
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input type="text" id="busca-transacao" oninput="filtrarTransacoes()" placeholder="Buscar lançamento..." 
+                                   class="pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-48">
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Lançamentos -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
+                                    <th class="py-3 px-4">Dia</th>
+                                    <th class="py-3 px-4">Descrição</th>
+                                    <th class="py-3 px-4">Categoria/Tipo</th>
+                                    <th class="py-3 px-4 text-right">Valor</th>
+                                    <th class="py-3 px-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-transacoes" class="divide-y divide-slate-100 text-sm">
+                                <!-- Conteúdo gerado dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Estado vazio da tabela -->
+                    <div id="tabela-vazia" class="hidden text-center py-12">
+                        <i class="fa-solid fa-receipt text-slate-300 text-4xl mb-3"></i>
+                        <p class="text-slate-500 font-medium">Nenhum registro encontrado para este mês.</p>
+                        <p class="text-xs text-slate-400 mt-1">Comece adicionando novos ganhos ou gastos no formulário ao lado.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-white border-t border-slate-100 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            <p>FinançasLocal &copy; 2026 - Dados 100% seguros e guardados apenas no seu navegador.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript para Lógica de Negócios e Persistência -->
+    <script>
+        // Estrutura de dados inicial se o localStorage estiver vazio
+        if (!localStorage.getItem('financas_app')) {
+            const dataAtual = obterAnoMesAtual();
+            const dataAnterior = obterAnoMesAnterior();
+
+            const dadosIniciais = {
+                entradas: [
+                    { id: '1', nome: 'Salário Exemplo', valor: 3500.00, anoMes: dataAtual },
+                    { id: '2', nome: 'Freelance', valor: 450.00, anoMes: dataAtual },
+                    { id: '10', nome: 'Salário Exemplo', valor: 3200.00, anoMes: dataAnterior },
+                ],
+                saidas: [
+                    { id: '3', dia: 5, nome: 'Aluguel', valor: 1200.00, categoria: 'Moradia', anoMes: dataAtual },
+                    { id: '4', dia: 10, nome: 'Supermercado', valor: 450.25, categoria: 'Alimentação', anoMes: dataAtual },
+                    { id: '5', dia: 15, nome: 'Mensalidade Internet', valor: 99.90, categoria: 'Assinaturas', anoMes: dataAtual },
+                    { id: '11', dia: 5, nome: 'Aluguel', valor: 1200.00, categoria: 'Moradia', anoMes: dataAnterior },
+                    { id: '12', dia: 8, nome: 'Supermercado', valor: 512.40, categoria: 'Alimentação', anoMes: dataAnterior },
+                    { id: '13', dia: 20, nome: 'Roupas Novas', valor: 230.00, categoria: 'Outros', anoMes: dataAnterior }
+                ]
+            };
+            localStorage.setItem('financas_app', JSON.stringify(dadosIniciais));
+        }
+
+        // Variáveis de controle global dos gráficos
+        let categoryChartInstance = null;
+        let comparisonChartInstance = null;
+
+        // Inicializador na página carregada
+        window.addEventListener('load', () => {
+            // Define o input month para o mês atual
+            document.getElementById('filtro-mes').value = obterAnoMesAtual();
+            atualizarInterface();
+        });
+
+        // Retorna a string YYYY-MM do mês atual
+        function obterAnoMesAtual() {
+            const d = new Date();
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            return `${d.getFullYear()}-${mes}`;
+        }
+
+        // Retorna a string YYYY-MM do mês anterior (para gerar dados fictícios coerentes)
+        function obterAnoMesAnterior() {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 1);
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            return `${d.getFullYear()}-${mes}`;
+        }
+
+        // Obter dados do localStorage
+        function obterDados() {
+            return JSON.parse(localStorage.getItem('financas_app'));
+        }
+
+        // Salvar dados no localStorage
+        function salvarDados(dados) {
+            localStorage.setItem('financas_app', JSON.stringify(dados));
+            atualizarInterface();
+        }
+
+        // Alterar o filtro de mês clicando nas setas
+        function alterarMes(direcao) {
+            const inputMes = document.getElementById('filtro-mes');
+            let [ano, mes] = inputMes.value.split('-').map(Number);
+            
+            mes += direcao;
+            if (mes > 12) {
+                mes = 1;
+                ano += 1;
+            } else if (mes < 1) {
+                mes = 12;
+                ano -= 1;
+            }
+
+            const novoMesString = `${ano}-${String(mes).padStart(2, '0')}`;
+            inputMes.value = novoMesString;
+            atualizarInterface();
+        }
+
+        // Salva Novo Ganho (Entrada)
+        function salvarGanho(event) {
+            event.preventDefault();
+            const nomeInput = document.getElementById('ganho-nome');
+            const valorInput = document.getElementById('ganho-valor');
+            const mesSelecionado = document.getElementById('filtro-mes').value;
+
+            const novoGanho = {
+                id: crypto.randomUUID(),
+                nome: nomeInput.value.trim(),
+                valor: parseFloat(valorInput.value),
+                anoMes: mesSelecionado
+            };
+
+            const dados = obterDados();
+            dados.entradas.push(novoGanho);
+            salvarDados(dados);
+
+            // Limpa form e avisa
+            nomeInput.value = '';
+            valorInput.value = '';
+            exibirAlerta('Ganho adicionado com sucesso!', 'success');
+        }
+
+        // Salva Novo Gasto (Saída)
+        function salvarGasto(event) {
+            event.preventDefault();
+            const nomeInput = document.getElementById('gasto-nome');
+            const diaInput = document.getElementById('gasto-dia');
+            const valorInput = document.getElementById('gasto-valor');
+            const categoriaSelect = document.getElementById('gasto-categoria');
+            const mesSelecionado = document.getElementById('filtro-mes').value;
+
+            // Valida dia de acordo com o mês/ano
+            const [ano, mes] = mesSelecionado.split('-').map(Number);
+            const maxDias = new Date(ano, mes, 0).getDate();
+            const diaDefinido = parseInt(diaInput.value);
+
+            if (diaDefinido < 1 || diaDefinido > maxDias) {
+                exibirAlerta(`O dia deve ser entre 1 e ${maxDias} para o mês selecionado.`, 'error');
+                return;
+            }
+
+            const novoGasto = {
+                id: crypto.randomUUID(),
+                dia: diaDefinido,
+                nome: nomeInput.value.trim(),
+                valor: parseFloat(valorInput.value),
+                categoria: categoriaSelect.value,
+                anoMes: mesSelecionado
+            };
+
+            const dados = obterDados();
+            dados.saidas.push(novoGasto);
+            // Ordenar saídas por dia
+            dados.saidas.sort((a, b) => a.dia - b.dia);
+            salvarDados(dados);
+
+            // Limpa form e avisa
+            nomeInput.value = '';
+            diaInput.value = '';
+            valorInput.value = '';
+            categoriaSelect.value = '';
+            exibirAlerta('Gasto adicionado com sucesso!', 'success');
+        }
+
+        // Excluir Lançamento genérico
+        function excluirTransacao(id, tipo) {
+            const dados = obterDados();
+            if (tipo === 'entrada') {
+                dados.entradas = dados.entradas.filter(item => item.id !== id);
+            } else {
+                dados.saidas = dados.saidas.filter(item => item.id !== id);
+            }
+            salvarDados(dados);
+            exibirAlerta('Lançamento removido.', 'success');
+        }
+
+        // Formata valores para Moeda Corrente Real (R$)
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Formata as chaves de anoMes (EX: 2026-05 para Mai/2026)
+        function formatarAnoMesParaExibicao(anoMes) {
+            if (!anoMes) return '';
+            const [ano, mes] = anoMes.split('-');
+            const mesesAbreviados = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const mesIndice = parseInt(mes) - 1;
+            return `${mesesAbreviados[mesIndice]}/${ano}`;
+        }
+
+        // Atualiza todos os elementos visuais da tela
+        function atualizarInterface() {
+            const mesSelecionado = document.getElementById('filtro-mes').value;
+            const dados = obterDados();
+
+            // Filtrar itens do mês selecionado
+            const entradasDoMes = dados.entradas.filter(item => item.anoMes === mesSelecionado);
+            const saidasDoMes = dados.saidas.filter(item => item.anoMes === mesSelecionado);
+
+            // Cálculos
+            const totalEntradas = entradasDoMes.reduce((acc, item) => acc + item.valor, 0);
+            const totalSaidas = saidasDoMes.reduce((acc, item) => acc + item.valor, 0);
+            const saldoFinal = totalEntradas - totalSaidas;
+
+            // Renderizar resumos superiores
+            document.getElementById('resumo-entradas').innerText = formatarMoeda(totalEntradas);
+            document.getElementById('resumo-saidas').innerText = formatarMoeda(totalSaidas);
+            
+            const resumoSaldoElement = document.getElementById('resumo-saldo');
+            resumoSaldoElement.innerText = formatarMoeda(saldoFinal);
+
+            // Customização dinâmica do Card de Saldo Final (Positivo vs Negativo)
+            const cardSaldo = document.getElementById('card-saldo');
+            const labelSaldo = document.getElementById('label-saldo');
+            const statusSaldo = document.getElementById('status-saldo');
+            const iconSaldoContainer = document.getElementById('icon-saldo-container');
+            const iconSaldo = document.getElementById('icon-saldo');
+
+            // Resetar classes para evitar acumular estilos
+            cardSaldo.className = "rounded-xl p-5 border flex items-center justify-between transition-colors duration-300 ";
+            iconSaldoContainer.className = "text-white p-3 rounded-xl shadow-lg ";
+
+            if (saldoFinal > 0) {
+                cardSaldo.classList.add("bg-emerald-50", "border-emerald-100");
+                labelSaldo.className = "text-xs font-semibold text-emerald-700 uppercase tracking-wider block mb-1";
+                resumoSaldoElement.className = "text-2xl font-bold text-emerald-800";
+                statusSaldo.className = "text-xs block mt-1 font-semibold text-emerald-600";
+                statusSaldo.innerText = "Saldo Positivo do Mês";
+                iconSaldoContainer.classList.add("bg-emerald-500", "shadow-emerald-200");
+                iconSaldo.className = "fa-solid fa-face-smile text-xl";
+            } else if (saldoFinal < 0) {
+                cardSaldo.classList.add("bg-rose-50", "border-rose-100");
+                labelSaldo.className = "text-xs font-semibold text-rose-700 uppercase tracking-wider block mb-1";
+                resumoSaldoElement.className = "text-2xl font-bold text-rose-800";
+                statusSaldo.className = "text-xs block mt-1 font-semibold text-rose-600";
+                statusSaldo.innerText = "Saldo Devedor / Negativo";
+                iconSaldoContainer.classList.add("bg-rose-500", "shadow-rose-200");
+                iconSaldo.className = "fa-solid fa-triangle-exclamation text-xl";
+            } else {
+                cardSaldo.classList.add("bg-slate-100", "border-slate-200");
+                labelSaldo.className = "text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1";
+                resumoSaldoElement.className = "text-2xl font-bold text-slate-700";
+                statusSaldo.className = "text-xs block mt-1 font-semibold text-slate-500";
+                statusSaldo.innerText = "Saldo Zerado";
+                iconSaldoContainer.classList.add("bg-slate-400", "shadow-slate-200");
+                iconSaldo.className = "fa-solid fa-scale-balanced text-xl";
+            }
+
+            // Renderizar tabela, atualizações de comparação e gráficos
+            gerarTabelaTransacoes(entradasDoMes, saidasDoMes);
+            gerarGraficoCategorias(saidasDoMes);
+            gerarPainelComparativo(dados);
+        }
+
+        // Constrói a lista combinada de transações do mês na tabela
+        function gerarTabelaTransacoes(entradas, saidas) {
+            const tbody = document.getElementById('tabela-transacoes');
+            const tabelaVazia = document.getElementById('tabela-vazia');
+            tbody.innerHTML = '';
+
+            // Concatenar e padronizar lista de transações para ordenação coerente
+            const todasTransacoes = [];
+
+            // Ganhos não têm dia por padrão do formulário do usuário, associamos ao início do mês
+            entradas.forEach(e => {
+                todasTransacoes.push({
+                    id: e.id,
+                    dia: 1, // Exibimos como início do mês
+                    nome: e.nome,
+                    valor: e.valor,
+                    categoria: 'Entrada / Receita',
+                    tipo: 'entrada'
+                });
+            });
+
+            saidas.forEach(s => {
+                todasTransacoes.push({
+                    id: s.id,
+                    dia: s.dia,
+                    nome: s.nome,
+                    valor: s.valor,
+                    categoria: s.categoria,
+                    tipo: 'saida'
+                });
+            });
+
+            // Ordena prioritariamente pelo dia de forma crescente
+            todasTransacoes.sort((a, b) => a.dia - b.dia);
+
+            if (todasTransacoes.length === 0) {
+                tabelaVazia.classList.remove('hidden');
+                return;
+            } else {
+                tabelaVazia.classList.add('hidden');
+            }
+
+            todasTransacoes.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 transition-colors duration-150";
+
+                const badgeStyle = t.tipo === 'entrada' 
+                    ? "bg-emerald-100 text-emerald-800" 
+                    : "bg-rose-100 text-rose-800";
+
+                const valorSinalizado = t.tipo === 'entrada' 
+                    ? `+ ${formatarMoeda(t.valor)}` 
+                    : `- ${formatarMoeda(t.valor)}`;
+
+                const valorClass = t.tipo === 'entrada' ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold';
+                const diaFormatado = t.tipo === 'entrada' ? '-' : String(t.dia).padStart(2, '0');
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500 font-medium">${diaFormatado}</td>
+                    <td class="py-3 px-4 font-medium text-slate-900">${t.nome}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeStyle}">
+                            ${t.categoria}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right ${valorClass}">${valorSinalizado}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="excluirTransacao('${t.id}', '${t.tipo}')" class="text-slate-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50" title="Excluir">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filtra transações em tempo real pelo mecanismo de busca da tabela
+        function filtrarTransacoes() {
+            const query = document.getElementById('busca-transacao').value.toLowerCase();
+            const linhas = document.querySelectorAll('#tabela-transacoes tr');
+            let registrosVisiveis = 0;
+
+            linhas.forEach(linha => {
+                const textoLinha = linha.innerText.toLowerCase();
+                if (textoLinha.includes(query)) {
+                    linha.classList.remove('hidden');
+                    registrosVisiveis++;
+                } else {
+                    linha.classList.add('hidden');
+                }
+            });
+
+            const tabelaVazia = document.getElementById('tabela-vazia');
+            if (registrosVisiveis === 0) {
+                tabelaVazia.classList.remove('hidden');
+            } else {
+                tabelaVazia.classList.add('hidden');
+            }
+        }
+
+        // Plota ou atualiza o Gráfico de pizza de Gastos por Categoria
+        function gerarGraficoCategorias(saidas) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const divSemDados = document.getElementById('no-chart-data');
+
+            // Caso não haja gastos neste mês
+            if (saidas.length === 0) {
+                if (categoryChartInstance) {
+                    categoryChartInstance.destroy();
+                    categoryChartInstance = null;
+                }
+                divSemDados.classList.remove('hidden');
+                return;
+            } else {
+                divSemDados.classList.add('hidden');
+            }
+
+            // Agrupa os gastos por suas categorias
+            const categoriasValores = {};
+            saidas.forEach(item => {
+                categoriasValores[item.categoria] = (categoriasValores[item.categoria] || 0) + item.valor;
+            });
+
+            const labels = Object.keys(categoriasValores);
+            const data = Object.values(categoriasValores);
+
+            // Paleta de cores moderna e amigável
+            const coresCategorias = {
+                'Alimentação': '#f59e0b',       // Amber
+                'Moradia': '#3b82f6',           // Blue
+                'Transporte': '#06b6d4',        // Cyan
+                'Saúde': '#10b981',             // Emerald
+                'Educação': '#8b5cf6',          // Purple
+                'Lazer/Entretenimento': '#ec4899', // Pink
+                'Assinaturas': '#6366f1',       // Indigo
+                'Outros': '#64748b'             // Slate
+            };
+
+            const backgroundColors = labels.map(label => coresCategorias[label] || '#94a3b8');
+
+            // Se o gráfico já existe, vamos destruí-lo antes de criar outro para evitar ghosting
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
+            }
+
+            categoryChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                font: {
+                                    size: 10,
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#475569'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += formatarMoeda(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // NOVO: Calcula e exibe estatísticas e o gráfico comparativo entre meses
+        function gerarPainelComparativo(dados) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            const divSemDadosComparativo = document.getElementById('no-comparison-data');
+            const tbodyComparacao = document.getElementById('tabela-comparacao-meses');
+
+            tbodyComparacao.innerHTML = '';
+
+            // Mapeia todas as transações para descobrir todos os meses que possuem registos
+            const mesesAtivosSet = new Set();
+            dados.entradas.forEach(e => mesesAtivosSet.add(e.anoMes));
+            dados.saidas.forEach(s => mesesAtivosSet.add(s.anoMes));
+
+            // Transforma em array e ordena cronologicamente (Ex: "2026-04", "2026-05")
+            const mesesOrdenados = Array.from(mesesAtivosSet).sort();
+
+            if (mesesOrdenados.length < 1) {
+                if (comparisonChartInstance) {
+                    comparisonChartInstance.destroy();
+                    comparisonChartInstance = null;
+                }
+                divSemDadosComparativo.classList.remove('hidden');
+                return;
+            } else {
+                divSemDadosComparativo.classList.add('hidden');
+            }
+
+            const dadosPorMes = mesesOrdenados.map(mes => {
+                const entradasMes = dados.entradas.filter(e => e.anoMes === mes).reduce((acc, curr) => acc + curr.valor, 0);
+                const saidasMes = dados.saidas.filter(s => s.anoMes === mes).reduce((acc, curr) => acc + curr.valor, 0);
+                const saldo = entradasMes - saidasMes;
+                return { mes, entradasMes, saidasMes, saldo };
+            });
+
+            // Gerar tabela de evolução
+            dadosPorMes.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 transition-colors";
+
+                let badgesDesempenho = '';
+                const saldoFormatado = formatarMoeda(item.saldo);
+
+                // Determina o indicador visual de poupança/saldo
+                if (item.saldo > 0) {
+                    badgesDesempenho = `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                            <i class="fa-solid fa-arrow-trend-up mr-1"></i> Poupança Ativa
+                        </span>
+                    `;
+                } else if (item.saldo < 0) {
+                    badgesDesempenho = `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
+                            <i class="fa-solid fa-arrow-trend-down mr-1"></i> Défice
+                        </span>
+                    `;
+                } else {
+                    badgesDesempenho = `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">
+                            Equilibrado
+                        </span>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-700">${formatarAnoMesParaExibicao(item.mes)}</td>
+                    <td class="py-3 px-4 text-right text-emerald-600 font-medium">${formatarMoeda(item.entradasMes)}</td>
+                    <td class="py-3 px-4 text-right text-rose-600 font-medium">${formatarMoeda(item.saidasMes)}</td>
+                    <td class="py-3 px-4 text-right font-bold ${item.saldo >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${saldoFormatado}</td>
+                    <td class="py-3 px-4 text-center">${badgesDesempenho}</td>
+                `;
+                tbodyComparacao.appendChild(tr);
+            });
+
+            // Limitar o gráfico para exibir apenas os últimos 6 meses com dados para não poluir visualmente
+            const ultimosMesesGrafico = dadosPorMes.slice(-6);
+
+            const labels = ultimosMesesGrafico.map(item => formatarAnoMesParaExibicao(item.mes));
+            const entradasData = ultimosMesesGrafico.map(item => item.entradasMes);
+            const saidasData = ultimosMesesGrafico.map(item => item.saidasMes);
+
+            // Se o gráfico já existe, vamos destruí-lo antes de recriar
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy();
+            }
+
+            comparisonChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Entradas',
+                            data: entradasData,
+                            backgroundColor: '#10b981', // Emerald 500
+                            borderRadius: 6,
+                            borderWidth: 0,
+                            maxBarThickness: 32
+                        },
+                        {
+                            label: 'Saídas',
+                            data: saidasData,
+                            backgroundColor: '#f43f5e', // Rose 500
+                            borderRadius: 6,
+                            borderWidth: 0,
+                            maxBarThickness: 32
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                font: {
+                                    size: 10,
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#475569'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatarMoeda(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10,
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#64748b'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10,
+                                    family: "'Inter', sans-serif"
+                                },
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sistema de alerta amigável na própria interface
+        function exibirAlerta(mensagem, tipo = 'success') {
+            const alertBox = document.getElementById('custom-alert');
+            const alertText = document.getElementById('alert-text');
+
+            alertText.innerText = mensagem;
+            
+            // Alterar estilo de acordo com o tipo
+            alertBox.className = "fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center justify-between gap-4 px-5 py-3 rounded-xl shadow-lg text-white font-medium ";
+            
+            if (tipo === 'success') {
+                alertBox.classList.add('bg-emerald-600', 'shadow-emerald-200');
+            } else {
+                alertBox.classList.add('bg-rose-600', 'shadow-rose-200');
+            }
+
+            alertBox.classList.remove('hidden', 'translate-y-2', 'opacity-0');
+            alertBox.classList.add('translate-y-0', 'opacity-100');
+
+            // Some automaticamente após 3.5 segundos
+            setTimeout(() => {
+                fecharAlerta();
+            }, 3500);
+        }
+
+        function fecharAlerta() {
+            const alertBox = document.getElementById('custom-alert');
+            alertBox.classList.remove('translate-y-0', 'opacity-100');
+            alertBox.classList.add('translate-y-2', 'opacity-0');
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
